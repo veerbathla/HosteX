@@ -1,23 +1,37 @@
+import Button from "../ui/Button";
+
 export default function CTA() {
   return (
-    <div className="mx-16 my-16 bg-green-600 text-white py-16 rounded-3xl text-center shadow-lg">
+    <div id="cta" className="bg-[#e6efe9] px-16 py-20">
       
-      <h2 className="text-3xl font-bold">
-        Ready to Digitize Your Campus?
-      </h2>
+      {/* CONTAINER */}
+      <div className="bg-gradient-to-r from-[#22c55e] to-[#15803d] rounded-3xl py-16 px-10 text-center shadow-lg">
+        
+        {/* Heading */}
+        <h2 className="text-3xl font-bold text-white">
+          Ready to Digitize Your Campus?
+        </h2>
 
-      <p className="mt-4 text-green-100">
-        Join institutions already using our platform
-      </p>
+        {/* Subtext */}
+        <p className="text-green-100 mt-4">
+          Join over 50 institutions streamlining their housing management today.
+        </p>
 
-      <div className="mt-8 flex justify-center gap-6">
-        <button className="bg-white text-green-600 px-6 py-3 rounded-lg font-medium">
-          Start Free Trial
-        </button>
+        {/* Buttons */}
+        <div className="mt-8 flex justify-center items-center gap-6">
+          
+          {/* Primary Button */}
+          <button className="bg-white text-green-700 px-6 py-3 rounded-lg font-medium shadow hover:bg-gray-100 transition">
+            Start Free Trial
+          </button>
 
-        <button className="underline">
-          Talk to Sales →
-        </button>
+          {/* Secondary Link */}
+          <button className="text-white font-medium flex items-center gap-1">
+            Talk to Sales →
+          </button>
+
+        </div>
+
       </div>
 
     </div>

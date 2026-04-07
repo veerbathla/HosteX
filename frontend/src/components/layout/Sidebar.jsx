@@ -10,7 +10,7 @@ export default function Sidebar({ role }) {
       {/* Logo */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-green-600">
-          Digital Campus
+          HosteX
         </h1>
         <p className="text-xs text-gray-400">
           {role === "admin" ? "ADMIN PANEL" : "STUDENT PORTAL"}

@@ -1,0 +1,41 @@
+import { createContext, useContext, useState } from "react";
+
+const AppContext = createContext();
+
+export function AppProvider({ children }) {
+  const [complaints, setComplaints] = useState([
+    {
+      id: 1,
+      title: "Fan not working",
+      time: "2 hours ago",
+      status: "pending",
+    },
+    {
+      id: 2,
+      title: "Water leakage in bathroom",
+      time: "Yesterday",
+      status: "progress",
+    },
+    {
+      id: 3,
+      title: "WiFi Connection Issues",
+      time: "3 days ago",
+      status: "resolved",
+    },
+  ]);
+
+  const addComplaint = (newComplaint) => {
+    setComplaints((prev) => [
+      { id: Date.now(), ...newComplaint },
+      ...prev,
+    ]);
+  };
+
+  return (
+    <AppContext.Provider value={{ complaints, addComplaint }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export const useApp = () => useContext(AppContext);
