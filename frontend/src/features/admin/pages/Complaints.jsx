@@ -7,13 +7,18 @@ import {
   Smile,
   TimerReset,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
 import { complaints as initialComplaints } from "../../../data/dummyData";
+import {
+  getAllComplaints,
+  updateComplaintStatus,
+} from "../../../services/api/complaintService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 import ComplaintsTable from "../components/complaints/ComplaintsTable";
 import SmartCard from "../components/complaints/SmartCard";
 
@@ -53,6 +58,8 @@ function MetricCard({ icon, label, value, trend, tone }) {
 
 export default function Complaints() {
   const [complaints, setComplaints] = useState(seedComplaints);
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [activeMenu, setActiveMenu] = useState(null);
@@ -65,6 +72,36 @@ export default function Complaints() {
     priority: "medium",
     status: "new",
   });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadComplaints() {
+      setLoading(true);
+      setApiNotice("");
+
+      try {
+        const data = await getAllComplaints();
+        if (active && data.length) {
+          setComplaints(data);
+        }
+      } catch (error) {
+        if (active) {
+          setApiNotice(
+            `${getErrorMessage(error)} Showing local complaint data.`,
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadComplaints();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const stats = useMemo(
     () => ({
@@ -125,14 +162,20 @@ export default function Complaints() {
     setActiveMenu(null);
   };
 
-  const resolveComplaint = (id) => {
+  const resolveComplaint = async (id) => {
     setComplaints((prev) =>
       prev.map((complaint) =>
         complaint.id === id ? { ...complaint, status: "resolved" } : complaint,
       ),
     );
     setActiveMenu(null);
-    showMessage("Complaint marked as resolved.");
+
+    try {
+      await updateComplaintStatus(id, "resolved");
+      showMessage("Complaint marked as resolved.");
+    } catch {
+      showMessage("Complaint resolved locally. API update is unavailable.");
+    }
   };
 
   const escalateComplaint = (id) => {
@@ -230,6 +273,12 @@ export default function Complaints() {
         </div>
       )}
 
+      {apiNotice && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+          {apiNotice}
+        </div>
+      )}
+
       <section className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <MetricCard
           icon={<Clock3 size={20} />}
@@ -290,20 +339,28 @@ export default function Complaints() {
         </div>
       </Card>
 
-      <ComplaintsTable
-        data={filteredComplaints}
-        activeMenu={activeMenu}
-        onToggleMenu={(id) =>
-          setActiveMenu((current) => (current === id ? null : id))
-        }
-        onOpenDetails={(complaint) => {
-          setModal({ type: "details", complaint });
-          setActiveMenu(null);
-        }}
-        onResolve={resolveComplaint}
-        onEdit={openEdit}
-        onEscalate={escalateComplaint}
-      />
+      {loading ? (
+        <Card className="space-y-3 p-4">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-20 animate-pulse rounded-2xl bg-gray-100" />
+          ))}
+        </Card>
+      ) : (
+        <ComplaintsTable
+          data={filteredComplaints}
+          activeMenu={activeMenu}
+          onToggleMenu={(id) =>
+            setActiveMenu((current) => (current === id ? null : id))
+          }
+          onOpenDetails={(complaint) => {
+            setModal({ type: "details", complaint });
+            setActiveMenu(null);
+          }}
+          onResolve={resolveComplaint}
+          onEdit={openEdit}
+          onEscalate={escalateComplaint}
+        />
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <SmartCard type="smart" />
