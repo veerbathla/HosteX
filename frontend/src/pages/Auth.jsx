@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -8,15 +8,10 @@ export default function Auth() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState("login");
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  // Sync mode with URL
-  useEffect(() => {
-    setMode(location.pathname === "/signup" ? "signup" : "login");
-  }, [location.pathname]);
+  const mode = location.pathname === "/signup" ? "signup" : "login";
 
   const handleSubmit = () => {
     if (!email || !password) {

@@ -1,11 +1,32 @@
-import { NavLink } from "react-router-dom";
-import { studentNav, adminNav } from "../../constants/navigation";
+import { LogOut } from "lucide-react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { studentNav, adminNav, gatekeeperNav } from "../../constants/navigation";
+import Button from "../ui/Button";
 
 export default function Sidebar({ role }) {
-  const links = role === "admin" ? adminNav : studentNav;
+  const navigate = useNavigate();
+  const linksByRole = {
+    admin: adminNav,
+    student: studentNav,
+    gatekeeper: gatekeeperNav,
+  };
+
+  const roleLabelByRole = {
+    admin: "ADMIN PANEL",
+    student: "STUDENT PORTAL",
+    gatekeeper: "GATEKEEPER PORTAL",
+  };
+
+  const links = linksByRole[role] || studentNav;
+  const roleLabel = roleLabelByRole[role] || "STUDENT PORTAL";
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
 
   return (
-    <div className="w-64 bg-white border-r p-4 flex flex-col">
+    <div className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col">
       
       {/* Logo */}
       <div className="mb-6">
@@ -13,7 +34,7 @@ export default function Sidebar({ role }) {
           HosteX
         </h1>
         <p className="text-xs text-gray-400">
-          {role === "admin" ? "ADMIN PANEL" : "STUDENT PORTAL"}
+          {roleLabel}
         </p>
       </div>
 
@@ -24,10 +45,10 @@ export default function Sidebar({ role }) {
             key={link.path}
             to={link.path}
             className={({ isActive }) =>
-              `flex items-center justify-between p-3 rounded-lg transition ${
+              `flex items-center justify-between border-l-4 p-3 rounded-lg transition duration-200 ${
                 isActive
-                  ? "bg-green-100 text-green-600"
-                  : "text-gray-600 hover:bg-gray-100"
+                  ? "border-green-600 bg-green-100 text-green-700 shadow-sm"
+                  : "border-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-800"
               }`
             }
           >
@@ -42,6 +63,18 @@ export default function Sidebar({ role }) {
           </NavLink>
         ))}
       </nav>
+
+      <div className="mt-auto border-t border-gray-200 pt-4">
+        <Button
+          variant="outline"
+          fullWidth
+          onClick={handleLogout}
+          className="justify-start border-gray-200 bg-white text-gray-600 hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+        >
+          <LogOut size={16} />
+          Logout
+        </Button>
+      </div>
 
     </div>
   );

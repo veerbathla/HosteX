@@ -21,11 +21,11 @@ import AdminComplaints from "../features/admin/pages/Complaints";
 import StaffTasks from "../features/admin/pages/StaffTasks";
 
 // Gatekeeper Pages (NEW)
-// import GatekeeperDashboard from "../features/gatekeeper/pages/Dashboard";
-// import EntryExit from "../features/gatekeeper/pages/EntryExit";
-// import Visitors from "../features/gatekeeper/pages/Visitors";
-// import Parcels from "../features/gatekeeper/pages/Parcels";
-// import Logs from "../features/gatekeeper/pages/Logs";
+import GatekeeperDashboard from "../features/gatekeeper/pages/GatekeeperDashboard";
+import EntryExit from "../features/gatekeeper/pages/EntryExit";
+import Visitors from "../features/gatekeeper/pages/Visitors";
+import Parcels from "../features/gatekeeper/pages/Parcels";
+import Logs from "../features/gatekeeper/pages/Logs";
 
 export default function AppRoutes() {
   return (
@@ -56,7 +56,7 @@ export default function AppRoutes() {
           <Route path="tasks" element={<StaffTasks />} />
         </Route>
 
-        {/* Gatekeeper Routes (NEW)
+        {/* Gatekeeper Routes */}
         <Route path="/gatekeeper" element={<DashboardLayout role="gatekeeper" />}>
           <Route index element={<Navigate to="dashboard" />} />
           <Route path="dashboard" element={<GatekeeperDashboard />} />
@@ -64,7 +64,7 @@ export default function AppRoutes() {
           <Route path="visitors" element={<Visitors />} />
           <Route path="parcels" element={<Parcels />} />
           <Route path="logs" element={<Logs />} />
-        </Route> */}
+        </Route>
 
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" />} />
