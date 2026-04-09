@@ -1,8 +1,11 @@
+import { useNavigate } from "react-router-dom";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 import Badge from "../ui/Badge";
 
 export default function Hero() {
+  const navigate = useNavigate();
+
   return (
     <div className="bg-[#e6efe9] px-16 py-20 flex items-center justify-between">
       
@@ -20,9 +23,22 @@ export default function Hero() {
           efficiently with our modern, all-in-one digital sanctuary.
         </p>
 
+        {/* 🔥 BUTTONS FIXED */}
         <div className="mt-8 flex gap-4">
-          <Button  >Get Started</Button>
-          <Button variant="secondary">Login</Button>
+          
+          {/* GET STARTED → SIGNUP */}
+          <Button onClick={() => navigate("/signup")}>
+            Get Started
+          </Button>
+
+          {/* LOGIN */}
+          <Button
+            variant="secondary"
+            onClick={() => navigate("/login")}
+          >
+            Login
+          </Button>
+
         </div>
 
       </div>
@@ -30,7 +46,7 @@ export default function Hero() {
       {/* RIGHT */}
       <Card className="p-6 rounded-2xl shadow-lg w-[420px]">
         
-        {/* TOP SECTION */}
+        {/* TOP */}
         <div className="flex gap-4">
           
           {/* CHART */}
@@ -68,7 +84,7 @@ export default function Hero() {
 
         </div>
 
-        {/* BOTTOM SECTION */}
+        {/* BOTTOM */}
         <div className="mt-6 bg-gray-50 rounded-xl p-4 flex justify-between items-center">
           
           <div>

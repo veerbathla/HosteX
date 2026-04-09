@@ -28,7 +28,7 @@ export default function Features() {
   return (
     <div id="features" className="bg-[#dde8e2] px-16 py-20 text-center">
       {/* Heading */}
-      <p class="text-[1.5rem] tracking-widest text-green-800 font-bold">
+      <p className="text-[1.5rem] tracking-widest text-green-800 font-bold">
         CORE CAPABILITIES
       </p>
 

@@ -3,6 +3,9 @@ export default function Button({
   variant = "primary",
   size = "md",
   fullWidth = false,
+  type = "button",
+  className = "",
+  ...props
 }) {
   const base =
     "rounded-lg font-medium transition flex items-center justify-center";
@@ -21,9 +24,11 @@ export default function Button({
 
   return (
     <button
+      type={type}
       className={`${base} ${variants[variant]} ${sizes[size]} ${
         fullWidth ? "w-full" : ""
-      }`}
+      } ${className}`}
+      {...props}
     >
       {children}
     </button>

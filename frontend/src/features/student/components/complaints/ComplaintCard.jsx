@@ -1,5 +1,5 @@
 import { Trash2 } from "lucide-react";
-import { useApp } from "../../../../context/AppContext";
+import { useApp } from "../../../../context/useApp";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
