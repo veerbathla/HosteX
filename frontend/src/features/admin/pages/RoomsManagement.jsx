@@ -1,12 +1,10 @@
 import {
-  AlertTriangle,
   BedDouble,
   CalendarCheck,
   CheckCircle2,
   Filter,
   Grid3X3,
   Key,
-  List,
   Plus,
   Search,
   User,
@@ -56,19 +54,19 @@ function RoomTile({
   onMarkAvailable,
 }) {
   return (
-    <article className="min-h-[260px] rounded-2xl bg-white p-5 shadow-sm ring-1 ring-emerald-100 transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="min-h-[260px] rounded-xl bg-white p-5 shadow-sm border transition hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-2xl font-black leading-none text-gray-900">
+          <h3 className="text-2xl font-bold leading-none text-gray-800">
             {room.number}
           </h3>
-          <p className="mt-2 text-xs font-semibold text-emerald-600">
+          <p className="mt-2 text-xs font-medium text-green-600">
             {room.type} - Floor {room.floor}
           </p>
         </div>
 
         <span
-          className={`rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-wide ${
+          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-wide ${
             statusStyles[room.status]
           }`}
         >
@@ -76,21 +74,21 @@ function RoomTile({
         </span>
       </div>
 
-      <div className="mt-5 flex items-center gap-3 text-emerald-500">
+      <div className="mt-5 flex items-center gap-3 text-green-500">
         <Wifi size={15} />
         <BedDouble size={15} />
         <Key size={15} />
       </div>
 
       {room.status === "occupied" && (
-        <div className="mt-5 rounded-xl bg-emerald-50 p-3">
+        <div className="mt-5 rounded-xl bg-green-50 p-3">
           <div className="flex items-center gap-3">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-xs font-bold text-emerald-700">
+            <div className="grid h-9 w-9 place-items-center rounded-full bg-white text-xs font-bold text-green-700">
               {room.studentInitials || "ST"}
             </div>
             <div>
               <p className="text-sm font-bold text-gray-800">{room.student}</p>
-              <p className="text-xs text-emerald-600">
+              <p className="text-xs text-green-600">
                 Since {room.assignedSince}
               </p>
             </div>
@@ -119,14 +117,14 @@ function RoomTile({
             <button
               type="button"
               onClick={() => onAssign(room)}
-              className="w-full rounded-lg bg-emerald-100 py-2 text-xs font-black uppercase tracking-widest text-emerald-800 hover:bg-emerald-200"
+              className="w-full rounded-lg bg-green-600 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-green-700"
             >
               Assign Room
             </button>
             <button
               type="button"
               onClick={() => onMarkMaintenance(room)}
-              className="w-full rounded-lg bg-amber-100 py-2 text-xs font-black uppercase tracking-widest text-amber-800 hover:bg-amber-200"
+              className="w-full rounded-lg bg-amber-100 py-2 text-xs font-semibold uppercase tracking-widest text-amber-800 hover:bg-amber-200"
             >
               Maintenance
             </button>
@@ -138,14 +136,14 @@ function RoomTile({
             <button
               type="button"
               onClick={() => onViewDetails(room)}
-              className="w-full rounded-lg bg-emerald-100 py-2 text-xs font-black uppercase tracking-widest text-emerald-800 hover:bg-emerald-200"
+              className="w-full rounded-lg bg-gray-200 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 hover:bg-gray-300"
             >
               View Details
             </button>
             <button
               type="button"
               onClick={() => onMarkMaintenance(room)}
-              className="w-full rounded-lg bg-amber-100 py-2 text-xs font-black uppercase tracking-widest text-amber-800 hover:bg-amber-200"
+              className="w-full rounded-lg bg-amber-100 py-2 text-xs font-semibold uppercase tracking-widest text-amber-800 hover:bg-amber-200"
             >
               Maintenance
             </button>
@@ -156,14 +154,14 @@ function RoomTile({
           <button
             type="button"
             onClick={() => onMarkAvailable(room)}
-            className="w-full rounded-lg bg-orange-500 py-2 text-xs font-black uppercase tracking-widest text-white hover:bg-orange-600"
+            className="w-full rounded-lg bg-green-600 py-2 text-xs font-semibold uppercase tracking-widest text-white hover:bg-green-700"
           >
             Update Status
           </button>
         )}
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-[11px] text-emerald-600">
+      <div className="mt-4 flex items-center justify-between text-[11px] text-green-600">
         <span className="inline-flex items-center gap-1">
           <User size={12} />
           Capacity: {room.occupants}/{room.capacity}
@@ -179,14 +177,14 @@ function RoomTile({
 
 function StatBlock({ label, value, accent = "emerald" }) {
   const accentClass =
-    accent === "amber" ? "text-amber-600 bg-amber-50" : "text-emerald-600 bg-white";
+    accent === "amber" ? "text-amber-600 bg-amber-50" : "text-green-600 bg-white";
 
   return (
-    <div className={`rounded-2xl p-5 shadow-sm ring-1 ring-emerald-100 ${accentClass}`}>
-      <p className="text-[10px] font-black uppercase tracking-widest">{label}</p>
-      <h3 className="mt-2 text-3xl font-black text-gray-900">{value}</h3>
-      <div className="mt-3 h-1 w-full rounded-full bg-emerald-100">
-        <div className="h-1 w-8 rounded-full bg-emerald-500" />
+    <div className={`rounded-xl p-5 shadow-sm border ${accentClass}`}>
+      <p className="text-[10px] font-semibold uppercase tracking-widest">{label}</p>
+      <h3 className="mt-2 text-2xl font-semibold text-gray-800">{value}</h3>
+      <div className="mt-3 h-1 w-full rounded-full bg-green-100">
+        <div className="h-1 w-8 rounded-full bg-green-500" />
       </div>
     </div>
   );
@@ -347,14 +345,14 @@ export default function RoomsManagement() {
   };
 
   return (
-    <div className="min-h-screen bg-[#edf7f0] p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-[#f5f7f6] p-6">
+      <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-xs font-black uppercase tracking-[0.22em] text-emerald-600">
+            <p className="text-sm font-medium text-green-600">
               Facility Management
             </p>
-            <h1 className="mt-2 text-4xl font-black tracking-tight text-gray-900">
+            <h1 className="mt-1 text-3xl font-bold text-gray-800">
               Room Inventory
             </h1>
           </div>
@@ -362,13 +360,13 @@ export default function RoomsManagement() {
           <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              className="rounded-xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-sm ring-1 ring-emerald-100"
+              className="rounded-lg bg-white px-4 py-2 text-sm font-medium text-green-700 shadow-sm border"
             >
               Grid View
             </button>
             <button
               type="button"
-              className="rounded-xl bg-emerald-50 px-5 py-3 text-sm font-bold text-emerald-400"
+              className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-600"
               onClick={() => showMessage("List view coming soon.")}
             >
               List View
@@ -376,7 +374,7 @@ export default function RoomsManagement() {
             <button
               type="button"
               onClick={() => setModal({ type: "add", room: null })}
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-emerald-800"
+              className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700"
             >
               <Plus size={16} />
               Add New Room
@@ -385,24 +383,24 @@ export default function RoomsManagement() {
         </header>
 
         {message && (
-          <div className="rounded-xl bg-emerald-100 px-4 py-3 text-sm font-bold text-emerald-800">
+          <div className="rounded-lg bg-green-100 px-4 py-3 text-sm font-medium text-green-800">
             {message}
           </div>
         )}
 
         <section className="grid gap-4 lg:grid-cols-[1fr_180px_180px_180px]">
-          <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-emerald-100">
+          <div className="rounded-xl bg-white p-5 shadow-sm border">
             <div className="grid gap-4 md:grid-cols-[1fr_240px_60px]">
               <label className="relative">
                 <Search
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500"
                   size={18}
                 />
                 <input
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                   placeholder="Search rooms, floors or students..."
-                  className="w-full rounded-xl border border-emerald-100 py-3 pl-10 pr-4 text-sm outline-none focus:border-emerald-400"
+                  className="w-full rounded-lg border border-gray-200 py-3 pl-10 pr-4 text-sm outline-none focus:border-green-500"
                 />
               </label>
 
@@ -410,7 +408,7 @@ export default function RoomsManagement() {
                 <select
                   value={floor}
                   onChange={(event) => setFloor(event.target.value)}
-                  className="rounded-xl border border-emerald-100 px-3 py-3 text-sm outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-3 text-sm outline-none focus:border-green-500"
                 >
                   <option value="all">All Floors</option>
                   <option value="1">Floor 1</option>
@@ -421,7 +419,7 @@ export default function RoomsManagement() {
                 <select
                   value={wing}
                   onChange={(event) => setWing(event.target.value)}
-                  className="rounded-xl border border-emerald-100 px-3 py-3 text-sm outline-none"
+                  className="rounded-lg border border-gray-200 px-3 py-3 text-sm outline-none focus:border-green-500"
                 >
                   <option value="all">All Wings</option>
                   <option value="A">Block A</option>
@@ -437,7 +435,7 @@ export default function RoomsManagement() {
                   setFloor("all");
                   setWing("all");
                 }}
-                className="grid place-items-center rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                className="grid place-items-center rounded-lg bg-green-50 text-green-700 hover:bg-green-100"
                 aria-label="Reset filters"
               >
                 <Filter size={18} />
@@ -470,27 +468,27 @@ export default function RoomsManagement() {
         </section>
 
         {filteredRooms.length === 0 && (
-          <div className="rounded-2xl bg-white p-10 text-center text-sm font-semibold text-gray-500">
+          <div className="rounded-xl bg-white p-10 text-center text-sm font-semibold text-gray-500 shadow-sm border">
             No rooms match the selected filters.
           </div>
         )}
 
-        <footer className="border-t border-emerald-100 py-10 text-center">
-          <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-emerald-50 text-emerald-500">
+        <footer className="border-t border-gray-200 py-10 text-center">
+          <div className="mx-auto grid h-12 w-12 place-items-center rounded-full bg-green-50 text-green-600">
             <Grid3X3 size={20} />
           </div>
-          <p className="mt-4 font-black text-gray-900">
+          <p className="mt-4 font-semibold text-gray-800">
             Showing {Math.min(visibleCount, filteredRooms.length)} of{" "}
             {rooms.length} Rooms
           </p>
-          <p className="text-sm text-emerald-500">
+          <p className="text-sm text-gray-500">
             Adjust your filters to see more listings
           </p>
           {visibleCount < filteredRooms.length && (
             <button
               type="button"
               onClick={() => setVisibleCount((count) => count + 10)}
-              className="mt-5 rounded-xl bg-emerald-100 px-8 py-3 text-sm font-black text-emerald-800 hover:bg-emerald-200"
+              className="mt-5 rounded-lg bg-green-600 px-8 py-3 text-sm font-medium text-white hover:bg-green-700"
             >
               Load More Rooms
             </button>
@@ -500,13 +498,13 @@ export default function RoomsManagement() {
 
       {modal.type && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-black uppercase tracking-widest text-emerald-600">
+                <p className="text-xs font-semibold uppercase tracking-widest text-green-600">
                   Room Management
                 </p>
-                <h2 className="mt-1 text-2xl font-black text-gray-900">
+                <h2 className="mt-1 text-2xl font-bold text-gray-800">
                   {modal.type === "add"
                     ? "Add New Room"
                     : `Room ${modal.room?.number}`}
@@ -515,7 +513,7 @@ export default function RoomsManagement() {
               <button
                 type="button"
                 onClick={closeModal}
-                className="text-sm font-black text-gray-400 hover:text-gray-700"
+                className="text-sm font-bold text-gray-400 hover:text-gray-700"
               >
                 X
               </button>
@@ -532,7 +530,7 @@ export default function RoomsManagement() {
                     }))
                   }
                   placeholder="Room Number, e.g. A-106"
-                  className="w-full rounded-xl border border-emerald-100 p-3 outline-none focus:border-emerald-400"
+                  className="w-full rounded-lg border border-gray-200 p-3 outline-none focus:border-green-500"
                 />
                 <input
                   type="number"
@@ -545,7 +543,7 @@ export default function RoomsManagement() {
                     }))
                   }
                   placeholder="Capacity"
-                  className="w-full rounded-xl border border-emerald-100 p-3 outline-none focus:border-emerald-400"
+                  className="w-full rounded-lg border border-gray-200 p-3 outline-none focus:border-green-500"
                 />
                 <div className="grid grid-cols-3 gap-3">
                   <select
@@ -556,7 +554,7 @@ export default function RoomsManagement() {
                         floor: event.target.value,
                       }))
                     }
-                    className="rounded-xl border border-emerald-100 p-3"
+                    className="rounded-lg border border-gray-200 p-3"
                   >
                     <option value="1">Floor 1</option>
                     <option value="2">Floor 2</option>
@@ -570,7 +568,7 @@ export default function RoomsManagement() {
                         wing: event.target.value,
                       }))
                     }
-                    className="rounded-xl border border-emerald-100 p-3"
+                    className="rounded-lg border border-gray-200 p-3"
                   >
                     <option value="A">Block A</option>
                     <option value="B">Block B</option>
@@ -584,7 +582,7 @@ export default function RoomsManagement() {
                         type: event.target.value,
                       }))
                     }
-                    className="rounded-xl border border-emerald-100 p-3"
+                    className="rounded-lg border border-gray-200 p-3"
                   >
                     {roomTypes.map((type) => (
                       <option key={type} value={type}>
@@ -596,7 +594,7 @@ export default function RoomsManagement() {
                 <button
                   type="button"
                   onClick={addRoom}
-                  className="w-full rounded-xl bg-emerald-700 py-3 font-black text-white hover:bg-emerald-800"
+                  className="w-full rounded-lg bg-green-600 py-3 font-medium text-white hover:bg-green-700"
                 >
                   Add Room
                 </button>
@@ -612,7 +610,7 @@ export default function RoomsManagement() {
                 <button
                   type="button"
                   onClick={() => assignRoom(modal.room)}
-                  className="w-full rounded-xl bg-emerald-700 py-3 font-black text-white hover:bg-emerald-800"
+                  className="w-full rounded-lg bg-green-600 py-3 font-medium text-white hover:bg-green-700"
                 >
                   Confirm Assign
                 </button>
@@ -621,14 +619,14 @@ export default function RoomsManagement() {
 
             {modal.type === "maintenance" && modal.room && (
               <div className="mt-6 space-y-4">
-                <div className="rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+                <div className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
                   Mark Room {modal.room.number} under maintenance? It will be
                   removed from available capacity until marked available again.
                 </div>
                 <button
                   type="button"
                   onClick={() => markMaintenance(modal.room)}
-                  className="w-full rounded-xl bg-orange-500 py-3 font-black text-white hover:bg-orange-600"
+                  className="w-full rounded-lg bg-amber-500 py-3 font-medium text-white hover:bg-amber-600"
                 >
                   Mark Under Maintenance
                 </button>
@@ -659,7 +657,7 @@ export default function RoomsManagement() {
                   <button
                     type="button"
                     onClick={() => markAvailable(modal.room)}
-                    className="mt-3 w-full rounded-xl bg-emerald-700 py-3 font-black text-white hover:bg-emerald-800"
+                    className="mt-3 w-full rounded-lg bg-green-600 py-3 font-medium text-white hover:bg-green-700"
                   >
                     Mark Available
                   </button>
@@ -667,7 +665,7 @@ export default function RoomsManagement() {
                   <button
                     type="button"
                     onClick={() => setModal({ type: "maintenance", room: modal.room })}
-                    className="mt-3 w-full rounded-xl bg-orange-500 py-3 font-black text-white hover:bg-orange-600"
+                    className="mt-3 w-full rounded-lg bg-amber-500 py-3 font-medium text-white hover:bg-amber-600"
                   >
                     Mark Under Maintenance
                   </button>
