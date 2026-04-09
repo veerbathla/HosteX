@@ -12,8 +12,8 @@ export default function DashboardLayout({ role }) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         
-        {/* Topbar */}
-        <Topbar />
+        {/* 🔥 FIX */}
+        <Topbar role={role} />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-6">

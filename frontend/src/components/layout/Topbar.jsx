@@ -1,4 +1,6 @@
-export default function Topbar({ role }) {
+export default function Topbar({ role = "student" }) {
+  const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+
   return (
     <div className="h-16 bg-white border-b flex items-center justify-between px-6">
       
@@ -12,12 +14,14 @@ export default function Topbar({ role }) {
       {/* Right Side */}
       <div className="flex items-center gap-4">
         <span>🔔</span>
+
         <div className="flex items-center gap-2">
           <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
-            U
+            {roleLabel[0]}
           </div>
+
           <span className="font-medium">
-            {role === "admin" ? "Admin" : "Student"}
+            {roleLabel}
           </span>
         </div>
       </div>
