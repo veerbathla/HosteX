@@ -5,6 +5,6 @@ import { authRole } from "../middleware/role.middleware.js";
 const router = express.Router();
 
 //Only Admin can Access
-router.get("/", protect, authRole(["admin"]), getDashboard);
+router.get("/", protect, authRole("admin"), getDashboard);
 
 export default router;
