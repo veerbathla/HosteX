@@ -30,9 +30,12 @@ export function AppProvider({ children }) {
       ...prev,
     ]);
   };
+  const deleteComplaint = (id) => {
+    setComplaints((prev) => prev.filter((c) => c.id !== id));
+  };
 
   return (
-    <AppContext.Provider value={{ complaints, addComplaint }}>
+    <AppContext.Provider value={{ complaints, addComplaint,deleteComplaint }}>
       {children}
     </AppContext.Provider>
   );

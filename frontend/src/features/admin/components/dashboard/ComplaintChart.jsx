@@ -6,20 +6,30 @@ import { useState } from "react";
 export default function ComplaintCard({ item }) {
   const { deleteComplaint } = useApp();
   const navigate = useNavigate();
-
   const [showModal, setShowModal] = useState(false);
 
-  const statusColor = {
-    pending: "text-yellow-600",
-    progress: "text-blue-600",
-    resolved: "text-green-600",
+  // 🔥 SAFETY GUARD (CRASH FIX)
+  if (!item) return null;
+
+  const statusConfig = {
+    pending: {
+      text: "text-yellow-600",
+      badge: "bg-yellow-100 text-yellow-600",
+    },
+    progress: {
+      text: "text-blue-600",
+      badge: "bg-blue-100 text-blue-600",
+    },
+    resolved: {
+      text: "text-green-600",
+      badge: "bg-green-100 text-green-600",
+    },
   };
 
-  const badge = {
-    pending: "bg-yellow-100 text-yellow-600",
-    progress: "bg-blue-100 text-blue-600",
-    resolved: "bg-green-100 text-green-600",
-  };
+  // 🔥 SAFE STATUS
+  const status = item?.status || "pending";
+  const currentStatus =
+    statusConfig[status] || statusConfig.pending;
 
   const handleDeleteClick = () => {
     setShowModal(true);
@@ -44,8 +54,8 @@ export default function ComplaintCard({ item }) {
       >
         {/* Top */}
         <div className="flex justify-between items-center text-xs">
-          <span className={`font-medium ${statusColor[item.status]}`}>
-            {item.status.toUpperCase()}
+          <span className={`font-medium ${currentStatus.text}`}>
+            {status.toUpperCase()}
           </span>
 
           <div className="flex items-center gap-3">
@@ -53,7 +63,6 @@ export default function ComplaintCard({ item }) {
               {item.date || "Oct 24, 2026"}
             </span>
 
-            {/* DELETE */}
             <button
               onClick={handleDeleteClick}
               className="text-red-400 hover:text-red-600 transition"
@@ -65,12 +74,12 @@ export default function ComplaintCard({ item }) {
 
         {/* Title */}
         <h3 className="font-semibold mt-3 text-gray-800 text-[15px]">
-          {item.title}
+          {item.title || "Untitled Complaint"}
         </h3>
 
         {/* Time */}
         <p className="text-xs text-gray-400 mt-1">
-          Reported: {item.time}
+          Reported: {item.time || "N/A"}
         </p>
 
         {/* Desc */}
@@ -80,7 +89,6 @@ export default function ComplaintCard({ item }) {
 
         {/* Bottom */}
         <div className="flex justify-between items-center mt-4">
-          {/* VIEW DETAILS */}
           <button
             onClick={() => navigate(`/student/complaints/${item.id}`)}
             className="text-xs text-green-600 font-medium hover:underline"
@@ -88,20 +96,18 @@ export default function ComplaintCard({ item }) {
             View Details →
           </button>
 
-          {/* STATUS BADGE */}
           <span
-            className={`text-xs px-3 py-1 rounded-full font-medium ${badge[item.status]}`}
+            className={`text-xs px-3 py-1 rounded-full font-medium ${currentStatus.badge}`}
           >
-            {item.status}
+            {status}
           </span>
         </div>
       </div>
 
-      {/* 🔴 MODAL */}
+      {/* 🔴 DELETE MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          
-          <div className="bg-white p-6 rounded-2xl shadow-xl w-[320px] animate-scaleIn">
+          <div className="bg-white p-6 rounded-2xl shadow-xl w-[320px]">
             
             <h2 className="text-lg font-semibold text-gray-800">
               Delete Complaint?
