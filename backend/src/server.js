@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dashboardRoutes from "./routes/dashboard.routes.js";
+import hostelRoutes from "./routes/hostel.routes.js";
+import maintenanceRoutes from "./routes/maintenance.routes.js";
+import roomRoutes from "./routes/room.routes.js";
+import userRoutes from "./routes/user.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { connectDB } from "./dataBase/db.js";
 
@@ -19,6 +23,11 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/hostel",hostelRoutes);
+app.use("/api/maintenance", maintenanceRoutes);
+app.use("/api/room",roomRoutes);
+app.use("/api/user",userRoutes);
+
 
 app.use(errorHandler);
 

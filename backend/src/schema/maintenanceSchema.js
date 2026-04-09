@@ -1,7 +1,5 @@
 import mongoose from "mongoose";
 
-const { isDeepStrictEqual } = require("util");
-
 const maintenaceSchema = new mongoose.Schema(
    {
       hostelId: {
