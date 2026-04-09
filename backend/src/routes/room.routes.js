@@ -35,7 +35,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", createRoom);
+router.post("/", protect, authRole("admin", "super_admin"), createRoom);
 /**
  * @swagger
  * /api/rooms:
@@ -66,6 +66,6 @@ router.post("/", createRoom);
  *       500:
  *         description: Server error
  */
-router.get("/", getRooms);
+router.get("/", protect, authRole("admin", "super_admin"), getRooms);
 
 export default router;

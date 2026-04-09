@@ -5,42 +5,46 @@ import Maintenance from "../schema/maintenanceSchema.js";
 //get dashboard stats
 export const getDashboard = async (req, res) => {
     try {
-        const hostelId = req.user.hostelId;
+        const filter = req.user.hostelId ? { hostelId: req.user.hostelId } : {};
         const totalStudents = await User.countDocuments({
-            hostelId: hostelId,
+            ...filter,
             role: "student",
         });
-        const totalRooms = await Room.countDocuments({
-            hostelId: hostelId,
-        });
+        const totalRooms = await Room.countDocuments(filter);
         const totalOccupiedRooms = await Room.countDocuments({
-            hostelId: hostelId,
+            ...filter,
             isOccupied: true,
         });
         const totalVacantRooms = await Room.countDocuments({
-            hostelId: hostelId,
+            ...filter,
             isOccupied: false,
         });
         const totalAdmins = await User.countDocuments({
-            hostelId: hostelId,
+            ...filter,
             role: "admin",
         });
         const pendingComplaints = await Maintenance.countDocuments({
-            hostelId: hostelId,
+            ...filter,
             status: "pending",
         });
-        res.status(200).json({
-            totalStudents,
-            totalRooms,
-            totalOccupiedRooms,
-            totalVacantRooms,
-            totalAdmins,
-            pendingComplaints
-        })
+        return res.status(200).json({
+            success: true,
+            message: "Dashboard fetched successfully",
+            data: {
+                totalStudents,
+                totalRooms,
+                totalOccupiedRooms,
+                totalVacantRooms,
+                totalAdmins,
+                pendingComplaints,
+            },
+        });
     }
     catch (error) {
-        res.status(500).json({
-            message: error.message,
-        })
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch dashboard",
+            data: null,
+        });
     }
 }

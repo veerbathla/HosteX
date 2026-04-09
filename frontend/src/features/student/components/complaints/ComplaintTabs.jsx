@@ -2,10 +2,10 @@ import Button from "../../../../components/ui/Button";
 import Card from "../../../../components/ui/Card";
 
 export default function ComplaintTabs({ active, setActive }) {
-  const tabs = ["all", "pending", "progress", "resolved"];
+  const tabs = ["all", "new", "in-progress", "resolved"];
 
   return (
-    <Card className="flex gap-4 p-3">
+    <Card className="flex flex-wrap gap-3 p-3">
       {tabs.map((tab) => (
         <Button
           key={tab}
@@ -13,7 +13,7 @@ export default function ComplaintTabs({ active, setActive }) {
           onClick={() => setActive(tab)}
           className="capitalize"
         >
-          {tab}
+          {tab.replace("-", " ")}
         </Button>
       ))}
     </Card>

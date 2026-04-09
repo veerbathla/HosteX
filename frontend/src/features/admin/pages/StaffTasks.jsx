@@ -222,7 +222,7 @@ export default function StaffTasks() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7f6] p-6">
+    <div className="min-h-screen p-6 sm:p-8">
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -232,7 +232,7 @@ export default function StaffTasks() {
             <h1 className="mt-1 text-3xl font-bold text-gray-800">
               Staff Task Management
             </h1>
-            <p className="mt-2 max-w-3xl text-sm text-gray-500">
+            <p className="mt-2 text-sm text-gray-600">
               Assign, track, and complete hostel maintenance tasks with live
               staff availability.
             </p>
@@ -251,25 +251,33 @@ export default function StaffTasks() {
         )}
 
         <section className="grid gap-4 md:grid-cols-4">
-          <Card>
-            <ClipboardList className="text-green-600" size={22} />
-            <p className="mt-4 text-sm text-gray-500">Total Tasks</p>
-            <h3 className="text-2xl font-semibold">{stats.total}</h3>
+          <Card className="flex flex-col items-center p-6 text-center">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-green-50 text-green-600">
+              <ClipboardList size={22} />
+            </div>
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-600">Total Tasks</p>
+            <h3 className="mt-2 text-3xl font-bold text-gray-900">{stats.total}</h3>
           </Card>
-          <Card>
-            <Clock className="text-amber-500" size={22} />
-            <p className="mt-4 text-sm text-gray-500">Pending</p>
-            <h3 className="text-2xl font-semibold">{stats.pending}</h3>
+          <Card className="flex flex-col items-center p-6 text-center">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-amber-50 text-amber-600">
+              <Clock size={22} />
+            </div>
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-600">Pending</p>
+            <h3 className="mt-2 text-3xl font-bold text-gray-900">{stats.pending}</h3>
           </Card>
-          <Card>
-            <Wrench className="text-blue-600" size={22} />
-            <p className="mt-4 text-sm text-gray-500">In Progress</p>
-            <h3 className="text-2xl font-semibold">{stats.active}</h3>
+          <Card className="flex flex-col items-center p-6 text-center">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-blue-50 text-blue-600">
+              <Wrench size={22} />
+            </div>
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-600">In Progress</p>
+            <h3 className="mt-2 text-3xl font-bold text-gray-900">{stats.active}</h3>
           </Card>
-          <Card>
-            <CheckCircle2 className="text-green-600" size={22} />
-            <p className="mt-4 text-sm text-gray-500">Completed</p>
-            <h3 className="text-2xl font-semibold">{stats.completed}</h3>
+          <Card className="flex flex-col items-center p-6 text-center">
+            <div className="grid h-12 w-12 place-items-center rounded-2xl bg-green-50 text-green-600">
+              <CheckCircle2 size={22} />
+            </div>
+            <p className="mt-4 text-xs font-bold uppercase tracking-wider text-gray-600">Completed</p>
+            <h3 className="mt-2 text-3xl font-bold text-gray-900">{stats.completed}</h3>
           </Card>
         </section>
 

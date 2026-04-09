@@ -1,5 +1,7 @@
 import express from "express";
-import { register, login, logout } from "../controller/auth.controller.js";
+import { register, login, logout, refresh, me } from "../controller/auth.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authRateLimiter } from "../middleware/rateLimit.middleware.js";
 
 const router = express.Router();
 
@@ -54,7 +56,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/register", register);
+router.post("/register", authRateLimiter, register);
 
 /**
  * @swagger
@@ -98,8 +100,10 @@ router.post("/register", register);
  *       500:
  *         description: Server error
  */
-router.post("/login", login);
+router.post("/login", authRateLimiter, login);
 
+router.post("/refresh", refresh);
+router.get("/me", protect, me);
 router.post("/logout", logout);
 
 export default router;

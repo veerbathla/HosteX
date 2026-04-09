@@ -35,14 +35,14 @@ export default function ComplaintsTable({
       <div className="flex items-center justify-between border-b px-5 py-4">
         <div>
           <h2 className="text-xl font-semibold text-gray-900">Recent Logs</h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-600">
             Prioritized complaints with fast admin actions.
           </p>
         </div>
         <Badge type="neutral">{data.length} records</Badge>
       </div>
 
-      <div className="space-y-3 p-4">
+      <div className="space-y-4 p-4">
         {data.map((item) => {
           const isHighPriority = item.priority === "high";
 
@@ -55,28 +55,28 @@ export default function ComplaintsTable({
               onKeyDown={(event) => {
                 if (event.key === "Enter") onOpenDetails(item);
               }}
-              className={`relative grid cursor-pointer grid-cols-[1.4fr_220px_210px_190px] items-center gap-4 rounded-2xl border bg-white p-4 transition duration-200 hover:-translate-y-0.5 hover:bg-green-50/40 hover:shadow-md ${
+              className={`relative grid cursor-pointer grid-cols-[1.4fr_220px_200px_1fr] items-center gap-6 rounded-2xl border bg-white p-5 transition-all duration-300 hover:bg-green-50/40 hover:shadow-md ${
                 isHighPriority
                   ? "border-red-100 shadow-[inset_4px_0_0_#ef4444]"
                   : "border-gray-100"
               }`}
             >
               <div>
-                <h3 className="font-semibold text-gray-900">{item.title}</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="font-bold text-gray-900">{item.title}</h3>
+                <p className="mt-1 text-sm text-gray-600">
                   {item.time} - {item.room || "Room not assigned"}
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-full bg-green-100 text-sm font-bold text-green-700">
+                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-green-100 text-sm font-bold text-green-700">
                   {item.initials}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-semibold text-gray-900">
                     {item.student}
                   </p>
-                  <p className="text-xs text-gray-400">Resident</p>
+                  <p className="text-xs font-medium text-gray-500">Resident</p>
                 </div>
               </div>
 

@@ -1,21 +1,37 @@
 import Leave from "../schema/leaveSchema.js";
+import mongoose from "mongoose";
 
 // 📝 Apply Leave (student/staff)
 export const applyLeave = async (req, res) => {
     try {
         const { fromDate, toDate, reason, hostelId } = req.body;
+        if (!fromDate || !toDate || !reason?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "From date, to date, and reason are required",
+                data: null,
+            });
+        }
 
         const leave = await Leave.create({
             userId: req.user._id,
             fromDate,
             toDate,
-            reason,
-            hostelId,
+            reason: reason.trim(),
+            hostelId: hostelId || req.user?.hostelId,
         });
 
-        res.status(201).json(leave);
+        return res.status(201).json({
+            success: true,
+            message: "Leave applied successfully",
+            data: leave,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to apply leave",
+            data: null,
+        });
     }
 };
 
@@ -23,9 +39,17 @@ export const applyLeave = async (req, res) => {
 export const getMyLeaves = async (req, res) => {
     try {
         const leaves = await Leave.find({ userId: req.user._id });
-        res.json(leaves);
+        return res.status(200).json({
+            success: true,
+            message: "Leaves fetched successfully",
+            data: leaves,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch leaves",
+            data: null,
+        });
     }
 };
 
@@ -36,9 +60,17 @@ export const getAllLeaves = async (req, res) => {
             .populate("userId", "name email")
             .sort({ createdAt: -1 });
 
-        res.json(leaves);
+        return res.status(200).json({
+            success: true,
+            message: "Leaves fetched successfully",
+            data: leaves,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch leaves",
+            data: null,
+        });
     }
 };
 
@@ -46,11 +78,32 @@ export const getAllLeaves = async (req, res) => {
 export const updateLeaveStatus = async (req, res) => {
     try {
         const { status } = req.body;
+        const allowedStatuses = ["pending", "approved", "rejected"];
+
+        if (!allowedStatuses.includes(status)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid leave status",
+                data: null,
+            });
+        }
+
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid leave id",
+                data: null,
+            });
+        }
 
         const leave = await Leave.findById(req.params.id);
 
         if (!leave) {
-            return res.status(404).json({ message: "Leave not found" });
+            return res.status(404).json({
+                success: false,
+                message: "Leave not found",
+                data: null,
+            });
         }
 
         leave.status = status;
@@ -58,8 +111,16 @@ export const updateLeaveStatus = async (req, res) => {
 
         await leave.save();
 
-        res.json(leave);
+        return res.status(200).json({
+            success: true,
+            message: "Leave status updated successfully",
+            data: leave,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to update leave",
+            data: null,
+        });
     }
 };

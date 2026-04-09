@@ -7,10 +7,16 @@ import {
   Users,
   UserX,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
+import {
+  createVisitorEntry,
+  getVisitors,
+  markVisitorExit,
+} from "../../../services/api/visitorService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 import {
   GateCard,
   GatekeeperPage,
@@ -34,6 +40,8 @@ const initialVisitors = [
 
 export default function Visitors() {
   const [visitors, setVisitors] = useState(initialVisitors);
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [message, setMessage] = useState("");
@@ -45,6 +53,34 @@ export default function Visitors() {
     timeIn: "",
     expectedTimeOut: "",
   });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadVisitors() {
+      setLoading(true);
+      setApiNotice("");
+
+      try {
+        const data = await getVisitors();
+        if (active && data.length) {
+          setVisitors(data);
+        }
+      } catch (error) {
+        if (active) {
+          setApiNotice(`${getErrorMessage(error)} Showing local visitor data.`);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadVisitors();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredVisitors = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -69,7 +105,7 @@ export default function Visitors() {
     window.setTimeout(() => setMessage(""), 2200);
   };
 
-  const confirmEntry = () => {
+  const confirmEntry = async () => {
     if (!form.fullName.trim() || !form.phone.trim() || !form.purpose.trim()) {
       showMessage("Please fill name, phone and purpose.");
       return;
@@ -79,27 +115,46 @@ export default function Visitors() {
     const name = studentInfo.split("(")[0].trim();
     const room = studentInfo.match(/Room\s\d+/i)?.[0] || "Room 101";
 
-    setVisitors((prev) => [
-      {
-        id: Date.now(),
-        visitor: form.fullName.trim(),
-        phone: form.phone.trim(),
-        student: name,
-        room,
-        timeIn: form.timeIn || "Now",
-        timeOut: "--:--",
-        status: "inside",
-      },
-      ...prev,
-    ]);
+    const localVisitor = {
+      id: Date.now(),
+      visitor: form.fullName.trim(),
+      phone: form.phone.trim(),
+      student: name,
+      room,
+      purpose: form.purpose.trim(),
+      timeIn: form.timeIn || "Now",
+      timeOut: "--:--",
+      status: "inside",
+    };
+
+    setVisitors((prev) => [localVisitor, ...prev]);
 
     setForm({ fullName: "", phone: "", visitingStudent: students[0], purpose: "", timeIn: "", expectedTimeOut: "" });
-    showMessage("Visitor entry confirmed.");
+
+    try {
+      const savedVisitor = await createVisitorEntry({
+        name: localVisitor.visitor,
+        phone: localVisitor.phone,
+        purpose: localVisitor.purpose,
+      });
+      setVisitors((prev) =>
+        prev.map((item) => (item.id === localVisitor.id ? savedVisitor : item)),
+      );
+      showMessage("Visitor entry confirmed.");
+    } catch {
+      showMessage("Visitor entry saved locally. API save is unavailable.");
+    }
   };
 
-  const markExit = (id) => {
+  const markExit = async (id) => {
     setVisitors((prev) => prev.map((row) => (row.id === id ? { ...row, status: "exited", timeOut: "Now" } : row)));
-    showMessage("Visitor marked as exited.");
+
+    try {
+      await markVisitorExit(id);
+      showMessage("Visitor marked as exited.");
+    } catch {
+      showMessage("Visitor marked locally. API update is unavailable.");
+    }
   };
 
   return (
@@ -118,6 +173,7 @@ export default function Visitors() {
         />
 
         {message && <div className="rounded-xl border border-green-200 bg-white px-5 py-4 text-sm font-medium text-green-800 shadow-sm">{message}</div>}
+        {apiNotice && <div className="rounded-xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800 shadow-sm">{apiNotice}</div>}
 
         <section className="grid grid-cols-1 gap-5 md:grid-cols-3">
           <GateStatCard label="Active Now" value={stats.activeNow} helper="Currently inside" icon={<Users size={20} />} tone="green" />
@@ -170,7 +226,12 @@ export default function Visitors() {
                 <span>Visitor</span><span>Student</span><span>Time In</span><span>Time Out</span><span>Status</span><span className="text-right">Actions</span>
               </div>
               <div className="divide-y divide-gray-100">
-                {filteredVisitors.map((row, index) => (
+                {loading ? (
+                  [1, 2, 3].map((item) => (
+                    <div key={item} className="h-20 animate-pulse bg-gray-50" />
+                  ))
+                ) : (
+                  filteredVisitors.map((row, index) => (
                   <div key={row.id} className={`grid gap-4 px-6 py-5 transition hover:bg-gray-50 lg:grid-cols-[1.2fr_1fr_0.65fr_0.65fr_0.7fr_1fr] lg:items-center ${index % 2 ? "bg-gray-50/40" : "bg-white"}`}>
                     <div className="flex items-center gap-3"><div className="grid h-11 w-11 place-items-center rounded-full bg-green-100 text-xs font-semibold text-green-700">{row.visitor.split(" ").map((part) => part[0]).join("").slice(0, 2)}</div><div><p className="font-semibold text-gray-950">{row.visitor}</p><p className="text-xs text-gray-500">{row.phone}</p></div></div>
                     <div><p className="font-medium text-gray-900">{row.student}</p><p className="text-xs text-green-700">{row.room}</p></div>
@@ -182,7 +243,7 @@ export default function Visitors() {
                       <Button size="sm" variant="outline" className="bg-white" onClick={() => showMessage(`Incident log opened for ${row.visitor}.`)}><AlertOctagon size={15} /></Button>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
               {filteredVisitors.length === 0 && <div className="p-10 text-center text-sm text-gray-500">No visitors match this search/filter.</div>}
             </GateCard>

@@ -50,7 +50,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", createComplaint);
+router.post("/", protect, createComplaint);
 
 /**
  * @swagger
@@ -67,7 +67,7 @@ router.post("/", createComplaint);
  *       500:
  *         description: Server error
  */
-router.get("/my", getMyComplaints);
+router.get("/my", protect, getMyComplaints);
 
 // Admin
 /**
@@ -107,7 +107,7 @@ router.get("/my", getMyComplaints);
  *       500:
  *         description: Server error
  */
-router.get("/", getAllComplaints);
+router.get("/", protect, authRole("admin", "super_admin"), getAllComplaints);
 
 /**
  * @swagger
@@ -145,6 +145,6 @@ router.get("/", getAllComplaints);
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, authRole(["admin"]), updateComplaintStatus);
+router.put("/:id", protect, authRole("admin", "super_admin"), updateComplaintStatus);
 
 export default router;

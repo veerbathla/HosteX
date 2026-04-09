@@ -9,12 +9,14 @@ import {
   UserPlus,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
+import { getAllStudents } from "../../../services/api/studentService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 
 const initialApplications = [
   {
@@ -104,7 +106,7 @@ function StatCard({ label, value, helper, icon, tone }) {
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-bold uppercase tracking-wide text-gray-600">
             {label}
           </p>
           <h3 className="mt-3 text-3xl font-bold text-gray-900">{value}</h3>
@@ -120,12 +122,57 @@ function StatCard({ label, value, helper, icon, tone }) {
 
 export default function Students() {
   const [applications, setApplications] = useState(initialApplications);
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [semesterFilter, setSemesterFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [message, setMessage] = useState("");
   const [checkInDraft, setCheckInDraft] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadStudents() {
+      setLoading(true);
+      setApiNotice("");
+
+      try {
+        const students = await getAllStudents();
+
+        if (!active) return;
+
+        if (students.length) {
+          setApplications(
+            students.map((student) => ({
+              id: student.id,
+              name: student.name,
+              studentId: student.studentId,
+              course: student.course,
+              year: student.year,
+              date: "From API",
+              status: student.status,
+            })),
+          );
+        }
+      } catch (error) {
+        if (active) {
+          setApiNotice(
+            `${getErrorMessage(error)} Showing local student request data.`,
+          );
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadStudents();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const stats = useMemo(
     () => ({
@@ -208,7 +255,7 @@ export default function Students() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7f6] p-1">
+    <div className="min-h-screen p-6 sm:p-8">
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -218,7 +265,7 @@ export default function Students() {
             <h1 className="mt-2 text-4xl font-bold tracking-tight text-gray-900">
               Student Requests
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-gray-500">
+            <p className="mt-2 max-w-xl text-sm leading-6 text-gray-600">
               Review and manage incoming hostel accommodation applications for
               the upcoming semester.
             </p>
@@ -255,6 +302,12 @@ export default function Students() {
         {message && (
           <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
             {message}
+          </div>
+        )}
+
+        {apiNotice && (
+          <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            {apiNotice}
           </div>
         )}
 
@@ -295,7 +348,7 @@ export default function Students() {
               <h2 className="text-lg font-bold text-gray-900">
                 Recent Applications
               </h2>
-              <p className="mt-1 text-sm text-gray-500">
+              <p className="mt-1 text-sm text-gray-600">
                 Fast scan student profiles, course details, and review state.
               </p>
             </div>
@@ -348,7 +401,7 @@ export default function Students() {
             </div>
           </div>
 
-          <div className="hidden grid-cols-[1.2fr_1.1fr_0.7fr_0.55fr_1fr] bg-gray-50 px-5 py-3 text-xs font-bold uppercase tracking-wide text-gray-500 lg:grid">
+          <div className="hidden grid-cols-[1.2fr_1.1fr_0.8fr_0.6fr_1fr] bg-gray-50 px-5 py-4 text-xs font-bold uppercase tracking-wider text-gray-700 border-b border-gray-100 lg:grid">
             <span>Student Name</span>
             <span>Course & Year</span>
             <span>Date Applied</span>
@@ -357,74 +410,80 @@ export default function Students() {
           </div>
 
           <div className="divide-y divide-gray-100">
-            {visibleApplications.map((application) => {
-              const meta = statusMeta[application.status];
+            {loading ? (
+              [1, 2, 3, 4].map((item) => (
+                <div key={item} className="h-20 animate-pulse bg-gray-50" />
+              ))
+            ) : (
+              visibleApplications.map((application) => {
+                const meta = statusMeta[application.status];
 
-              return (
-                <div
-                  key={application.id}
-                  className="grid gap-4 px-5 py-4 transition hover:bg-green-50/40 lg:grid-cols-[1.2fr_1.1fr_0.7fr_0.55fr_1fr] lg:items-center"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="grid h-12 w-12 place-items-center rounded-2xl bg-green-100 text-sm font-bold text-green-700">
-                      {application.name
-                        .split(" ")
-                        .map((part) => part[0])
-                        .join("")
-                        .slice(0, 2)}
+                return (
+                  <div
+                    key={application.id}
+                    className="grid gap-4 px-5 py-5 transition hover:bg-green-50/50 lg:grid-cols-[1.2fr_1.1fr_0.8fr_0.6fr_1fr] lg:items-center"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-green-100 text-sm font-bold text-green-700">
+                        {application.name
+                          .split(" ")
+                          .map((part) => part[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">
+                          {application.name}
+                        </p>
+                        <p className="text-xs font-medium text-gray-600">
+                          ID: {application.studentId}
+                        </p>
+                      </div>
                     </div>
+
                     <div>
-                      <p className="font-semibold text-gray-900">
-                        {application.name}
+                      <p className="font-semibold text-gray-800">
+                        {application.course}
                       </p>
-                      <p className="text-xs font-medium text-gray-500">
-                        ID: {application.studentId}
-                      </p>
+                      <p className="text-xs text-gray-600">{application.year}</p>
+                    </div>
+
+                    <p className="text-sm font-medium text-gray-600">
+                      {application.date}
+                    </p>
+
+                    <Badge type={meta.badge}>{meta.label}</Badge>
+
+                    <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
+                      {application.status !== "approved" && (
+                        <Button
+                          size="sm"
+                          onClick={() => updateStatus(application.id, "approved")}
+                        >
+                          Approve
+                        </Button>
+                      )}
+                      {application.status !== "rejected" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateStatus(application.id, "rejected")}
+                        >
+                          Reject
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => showMessage(`Opened ${application.name}.`)}
+                      >
+                        View
+                      </Button>
                     </div>
                   </div>
-
-                  <div>
-                    <p className="font-semibold text-gray-800">
-                      {application.course}
-                    </p>
-                    <p className="text-xs text-gray-500">{application.year}</p>
-                  </div>
-
-                  <p className="text-sm font-medium text-gray-500">
-                    {application.date}
-                  </p>
-
-                  <Badge type={meta.badge}>{meta.label}</Badge>
-
-                  <div className="flex flex-wrap justify-start gap-2 lg:justify-end">
-                    {application.status !== "approved" && (
-                      <Button
-                        size="sm"
-                        onClick={() => updateStatus(application.id, "approved")}
-                      >
-                        Approve
-                      </Button>
-                    )}
-                    {application.status !== "rejected" && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => updateStatus(application.id, "rejected")}
-                      >
-                        Reject
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => showMessage(`Opened ${application.name}.`)}
-                    >
-                      View
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
           {visibleApplications.length === 0 && (
@@ -465,7 +524,7 @@ export default function Students() {
         <section className="grid gap-4 lg:grid-cols-[1.6fr_0.9fr]">
           <Card className="overflow-hidden border-emerald-900 bg-emerald-950 p-5 text-white shadow-lg">
             <div className="relative z-10">
-              <h2 className="text-2xl font-bold">Weekly Bulk Approval</h2>
+              <h2 className="text-2xl font-bold text-white">Weekly Bulk Approval</h2>
               <p className="mt-2 max-w-xl text-sm leading-6 text-emerald-100">
                 Approve all pending requests that meet the basic eligibility
                 criteria with one click.
@@ -518,7 +577,7 @@ export default function Students() {
                 <h2 className="mt-2 text-2xl font-bold text-gray-900">
                   Confirm Student Entry
                 </h2>
-                <p className="mt-2 text-sm leading-6 text-gray-500">
+                <p className="mt-2 text-sm leading-6 text-gray-600">
                   A random student profile has been generated for the new hostel
                   check-in request.
                 </p>
@@ -546,7 +605,7 @@ export default function Students() {
                   <p className="text-lg font-bold text-gray-900">
                     {checkInDraft.name}
                   </p>
-                  <p className="text-sm font-medium text-gray-500">
+                  <p className="text-sm font-medium text-gray-600">
                     ID: {checkInDraft.studentId}
                   </p>
                 </div>

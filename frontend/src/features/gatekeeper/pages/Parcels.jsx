@@ -11,12 +11,18 @@ import {
   Search,
   Truck,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
+import {
+  addParcel,
+  collectParcel,
+  getParcels,
+} from "../../../services/api/parcelService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 
 const seedLedger = [
   {
@@ -96,6 +102,8 @@ function StatCard({ label, value, helper, icon, tone }) {
 
 export default function Parcels() {
   const [ledger, setLedger] = useState(seedLedger);
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [message, setMessage] = useState("");
@@ -104,6 +112,34 @@ export default function Parcels() {
     courier: "DHL Express",
     status: "received",
   });
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadParcels() {
+      setLoading(true);
+      setApiNotice("");
+
+      try {
+        const parcels = await getParcels();
+        if (active && parcels.length) {
+          setLedger(parcels);
+        }
+      } catch (error) {
+        if (active) {
+          setApiNotice(`${getErrorMessage(error)} Showing local parcel data.`);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadParcels();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredLedger = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -138,7 +174,7 @@ export default function Parcels() {
     window.setTimeout(() => setMessage(""), 2200);
   };
 
-  const registerParcel = () => {
+  const registerParcel = async () => {
     if (!form.studentRoom.trim()) {
       showMessage("Add student name and room first.");
       return;
@@ -148,26 +184,43 @@ export default function Parcels() {
     const roomMatch = form.studentRoom.match(/[A-C]-\d{3}/i);
     const nextStatus = form.status === "received" ? "pending" : "damaged";
 
-    setLedger((prev) => [
-      {
-        id: Date.now(),
-        recipient: recipient.trim(),
-        room: (roomMatch?.[0] || "A-101").toUpperCase(),
-        courier: form.courier,
-        receivedAt: "Now",
-        status: nextStatus,
-      },
-      ...prev,
-    ]);
+    const localParcel = {
+      id: Date.now(),
+      recipient: recipient.trim(),
+      room: (roomMatch?.[0] || "A-101").toUpperCase(),
+      courier: form.courier,
+      receivedAt: "Now",
+      status: nextStatus,
+    };
+
+    setLedger((prev) => [localParcel, ...prev]);
     setForm({ studentRoom: "", courier: "DHL Express", status: "received" });
-    showMessage("Parcel registered in active ledger.");
+
+    try {
+      const savedParcel = await addParcel({
+        parcelFrom: form.courier,
+        description: `${recipient.trim()} ${localParcel.room}`,
+      });
+      setLedger((prev) =>
+        prev.map((item) => (item.id === localParcel.id ? savedParcel : item)),
+      );
+      showMessage("Parcel registered in active ledger.");
+    } catch {
+      showMessage("Parcel registered locally. API save is unavailable.");
+    }
   };
 
-  const markCollected = (id) => {
+  const markCollected = async (id) => {
     setLedger((prev) =>
       prev.map((item) => (item.id === id ? { ...item, status: "collected" } : item)),
     );
-    showMessage("Parcel marked as collected.");
+
+    try {
+      await collectParcel(id);
+      showMessage("Parcel marked as collected.");
+    } catch {
+      showMessage("Parcel marked locally. API update is unavailable.");
+    }
   };
 
   const logIncident = (recipient) => {
@@ -224,6 +277,12 @@ export default function Parcels() {
       {message && (
         <div className="rounded-xl border border-green-100 bg-green-50 px-5 py-4 text-sm font-medium text-green-800 shadow-sm">
           {message}
+        </div>
+      )}
+
+      {apiNotice && (
+        <div className="rounded-xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800 shadow-sm">
+          {apiNotice}
         </div>
       )}
 
@@ -359,7 +418,12 @@ export default function Parcels() {
             </div>
 
             <div className="divide-y divide-gray-100">
-              {filteredLedger.map((item, index) => {
+              {loading ? (
+                [1, 2, 3, 4].map((item) => (
+                  <div key={item} className="h-20 animate-pulse bg-gray-50" />
+                ))
+              ) : (
+                filteredLedger.map((item, index) => {
                 const meta = statusMeta[item.status];
 
                 return (
@@ -412,7 +476,7 @@ export default function Parcels() {
                     </div>
                   </div>
                 );
-              })}
+              }))}
             </div>
 
             {filteredLedger.length === 0 && (

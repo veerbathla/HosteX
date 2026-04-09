@@ -41,7 +41,7 @@ function MetricCard({ icon, label, value, trend, tone }) {
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
+          <p className="text-sm font-semibold text-gray-600">{label}</p>
           <h3 className="mt-2 text-3xl font-bold text-gray-900">{value}</h3>
         </div>
         <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/80 shadow-sm">
@@ -240,13 +240,13 @@ export default function Complaints() {
   };
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#f5f7f6] p-6">
+    <div className="min-h-screen space-y-6 p-6 sm:p-8">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-gray-900">
             Complaint Management
           </h1>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-2 text-sm text-gray-600">
             Track hostel issues, identify urgent complaints, and resolve faster.
           </p>
         </div>

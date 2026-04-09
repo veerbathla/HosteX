@@ -7,10 +7,15 @@ import {
   ShieldAlert,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
+import {
+  getEntryLogs,
+  markEntryExit,
+} from "../../../services/api/studentService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 import {
   GateCard,
   GatekeeperPage,
@@ -63,9 +68,39 @@ function ScannerPanel({ onMessage }) {
 
 export default function EntryExit() {
   const [logs, setLogs] = useState(seedTransit);
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadLogs() {
+      setLoading(true);
+      setApiNotice("");
+
+      try {
+        const data = await getEntryLogs();
+        if (active && data.length) {
+          setLogs(data);
+        }
+      } catch (error) {
+        if (active) {
+          setApiNotice(`${getErrorMessage(error)} Showing local entry logs.`);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadLogs();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const filteredLogs = useMemo(() => {
     const term = query.trim().toLowerCase();
@@ -90,7 +125,9 @@ export default function EntryExit() {
     window.setTimeout(() => setMessage(""), 2200);
   };
 
-  const toggleTransit = (id) => {
+  const toggleTransit = async (id) => {
+    const currentLog = logs.find((item) => item.id === id);
+
     setLogs((prev) =>
       prev.map((item) => {
         if (item.id !== id) return item;
@@ -103,7 +140,19 @@ export default function EntryExit() {
         };
       }),
     );
-    showMessage("Student transit status updated.");
+
+    try {
+      if (currentLog?.raw?._id || currentLog?.raw?.studentId) {
+        await markEntryExit({
+          studentId: currentLog.raw?.studentId?._id || currentLog.raw?.studentId || id,
+          hostelId: currentLog.raw?.hostelId,
+          direction: currentLog.status === "inside" ? "exit" : "entry",
+        });
+      }
+      showMessage("Student transit status updated.");
+    } catch {
+      showMessage("Transit status updated locally. API update is unavailable.");
+    }
   };
 
   const addManualLog = () => {
@@ -145,6 +194,7 @@ export default function EntryExit() {
         />
 
         {message && <div className="rounded-xl border border-green-200 bg-white px-5 py-4 text-sm font-medium text-green-800 shadow-sm">{message}</div>}
+        {apiNotice && <div className="rounded-xl border border-amber-100 bg-amber-50 px-5 py-4 text-sm font-medium text-amber-800 shadow-sm">{apiNotice}</div>}
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-12">
           <div className="space-y-6 xl:col-span-4">
@@ -184,7 +234,12 @@ export default function EntryExit() {
               </div>
 
               <div className="divide-y divide-gray-100">
-                {filteredLogs.map((item, index) => (
+                {loading ? (
+                  [1, 2, 3, 4].map((item) => (
+                    <div key={item} className="h-20 animate-pulse bg-gray-50" />
+                  ))
+                ) : (
+                  filteredLogs.map((item, index) => (
                   <div key={item.id} className={`grid gap-4 px-6 py-5 transition hover:bg-gray-50 lg:grid-cols-[1.35fr_0.9fr_0.8fr_0.7fr_1fr] lg:items-center ${index % 2 ? "bg-gray-50/40" : "bg-white"}`}>
                     <div className="flex items-center gap-3">
                       <div className="grid h-11 w-11 place-items-center rounded-full bg-green-100 text-sm font-semibold text-green-700">
@@ -204,7 +259,7 @@ export default function EntryExit() {
                       <Button size="sm" variant="outline" className="bg-white" onClick={() => showMessage(`${item.name} profile opened.`)}>View</Button>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
 
               {filteredLogs.length === 0 && <div className="p-10 text-center text-sm text-gray-500">No students found for this search/filter.</div>}

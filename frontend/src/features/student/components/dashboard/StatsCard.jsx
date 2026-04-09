@@ -21,27 +21,18 @@ export default function StatsCard({
 
   return (
     <div
-      className={`bg-white p-5 rounded-xl border-l-4 ${borderColor}
-      shadow-[0_4px_20px_rgba(0,0,0,0.05)]
-      hover:shadow-[0_6px_25px_rgba(0,0,0,0.08)]
-      hover:scale-[1.02] transition-all duration-300`}
+      className={`rounded-xl border border-gray-100 border-l-4 ${borderColor} bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-md`}
     >
-      {/* Top Row */}
-      <div className="flex justify-between items-center">
-        <p className="text-xs text-gray-400 tracking-wide">{title}</p>
-
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-bold uppercase tracking-wider text-gray-600">
+          {title}
+        </p>
         <div className="text-gray-400">{icon}</div>
       </div>
 
-      {/* Value */}
-      <h2 className="text-xl font-semibold mt-3 text-gray-800">
-        {value}
-      </h2>
+      <h2 className="mt-4 text-2xl font-bold text-gray-900">{value}</h2>
 
-      {/* Subtitle */}
-      <p className={`text-sm mt-1 ${textColor}`}>
-        {subtitle}
-      </p>
+      <p className={`mt-2 text-sm font-medium ${textColor}`}>{subtitle}</p>
     </div>
   );
 }

@@ -4,6 +4,8 @@ import {
     collectParcel,
     getParcels,
 } from "../controller/parcel.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authRole } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -36,7 +38,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", addParcel);
+router.post("/", protect, authRole("admin", "super_admin", "gatekeeper"), addParcel);
 /**
  * @swagger
  * /api/parcels/{id}/collect:
@@ -56,7 +58,7 @@ router.post("/", addParcel);
  *       500:
  *         description: Server error
  */
-router.put("/:id/collect", collectParcel);
+router.put("/:id/collect", protect, collectParcel);
 /**
  * @swagger
  * /api/parcels:
@@ -94,6 +96,6 @@ router.put("/:id/collect", collectParcel);
  *       500:
  *         description: Server error
  */
-router.get("/", getParcels);
+router.get("/", protect, authRole("admin", "super_admin", "gatekeeper"), getParcels);
 
 export default router;

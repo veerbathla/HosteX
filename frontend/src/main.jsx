@@ -1,13 +1,16 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import { AppProvider } from "./context/AppContext";
 import App from "./App.jsx";
+import ErrorBoundary from "./components/feedback/ErrorBoundary.jsx";
+import { ToastProvider } from "./components/feedback/ToastProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <ErrorBoundary>
+      <ToastProvider>
+        <App />
+      </ToastProvider>
+    </ErrorBoundary>
   </StrictMode>,
 );

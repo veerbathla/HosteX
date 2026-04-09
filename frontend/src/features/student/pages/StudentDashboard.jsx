@@ -4,14 +4,45 @@ import {
   Bell,
   ClipboardList,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import WelcomeCard from "../components/dashboard/WelcomeCard";
 import StatsCard from "../components/dashboard/StatsCard";
 import RecentActivity from "../components/dashboard/RecentActivity";
 import LunchCard from "../components/dashboard/LunchCard";
 import QuickActions from "../components/dashboard/QuickActions";
+import { getMyComplaints } from "../../../services/api/complaintService";
 
 export default function StudentDashboard() {
+  const [complaints, setComplaints] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadStats() {
+      try {
+        const data = await getMyComplaints();
+        if (active) setComplaints(data);
+      } catch {
+        if (active) setComplaints([]);
+      }
+    }
+
+    loadStats();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const complaintStats = useMemo(
+    () => ({
+      total: complaints.length,
+      pending: complaints.filter((item) => item.status !== "resolved").length,
+    }),
+    [complaints],
+  );
+
   return (
     <div className="p-6 bg-[#f5f7f6] min-h-screen">
 
@@ -29,13 +60,13 @@ export default function StudentDashboard() {
         />
         <StatsCard
           title="Total Complaints"
-          value="5"
+          value={String(complaintStats.total)}
           subtitle="Lifetime reports"
           icon={<ClipboardList size={18} />}
         />
         <StatsCard
           title="Pending Issues"
-          value="2"
+          value={String(complaintStats.pending)}
           subtitle="Awaiting staff action"
           icon={<AlertTriangle size={18} />}
           type="warning"

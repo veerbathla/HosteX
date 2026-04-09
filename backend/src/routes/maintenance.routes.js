@@ -39,7 +39,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", createRequest);
+router.post("/", protect, createRequest);
 /**
  * @swagger
  * /api/maintenance:
@@ -75,6 +75,6 @@ router.post("/", createRequest);
  *       500:
  *         description: Server error
  */
-router.get("/", getRequests);
+router.get("/", protect, authRole("admin", "super_admin"), getRequests);
 
 export default router;

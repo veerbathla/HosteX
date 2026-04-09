@@ -107,9 +107,9 @@ export default function Select({
           setHighlightedIndex(0);
           setOpen((current) => !current);
         }}
-        className="flex h-12 w-full items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3.5 text-left text-sm font-medium text-gray-700 shadow-sm transition duration-200 hover:border-gray-300 hover:shadow-md focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-100 active:scale-[0.99]"
+        className="flex h-12 w-full items-center justify-between gap-3 rounded-xl border border-gray-200 bg-white px-3.5 text-left text-sm font-medium text-gray-700 shadow-sm transition duration-200 hover:border-gray-300 hover:shadow-md focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-100"
       >
-        <span className={selectedOption ? "truncate" : "truncate text-gray-400"}>
+        <span className={selectedOption ? "truncate" : "truncate text-gray-500"}>
           {selectedOption?.label || placeholder}
         </span>
         <ChevronDown
@@ -133,7 +133,7 @@ export default function Select({
                   setHighlightedIndex(0);
                 }}
                 placeholder="Search..."
-                className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-400"
+                className="h-full min-w-0 flex-1 bg-transparent text-sm font-medium text-gray-700 outline-none placeholder:text-gray-500"
               />
             </label>
           )}

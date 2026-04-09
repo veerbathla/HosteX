@@ -15,6 +15,7 @@ import visitorRoutes from "./routes/visitor.routes.js";
 import parcelRoutes from "./routes/parcel.routes.js";
 
 import { errorHandler } from "./middleware/error.middleware.js";
+import { sanitizeRequest } from "./middleware/sanitize.middleware.js";
 import { connectDB } from "./dataBase/db.js";
 import entryRoutes from "./routes/entry.routes.js";
 
@@ -29,9 +30,24 @@ dotenv.config();
 connectDB();
 const app = express();
 const PORT = process.env.PORT || 3000;
-app.use(cors());
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+].filter(Boolean);
+
+app.use(cors({
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
+app.use(sanitizeRequest);
 
 
 const options = {
@@ -69,18 +85,31 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/hostel", hostelRoutes);
 app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/room", roomRoutes);
+app.use("/api/rooms", roomRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/users", userRoutes);
 
 
 app.use("/api/complaints", complaintRoutes);
 app.use("/api/visitors", visitorRoutes);
 app.use("/api/parcels", parcelRoutes);
 app.use("/api/entry", entryRoutes);
+app.use("/api/leaves", leaveRoutes);
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: "Route not found",
+        data: null,
+    });
+});
 
 app.use(errorHandler);
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    if (process.env.NODE_ENV !== "test") {
+        console.info(`Server is running on port ${PORT}`);
+    }
 })
 
 export default app;

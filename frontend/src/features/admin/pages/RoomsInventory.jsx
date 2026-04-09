@@ -108,7 +108,7 @@ function StatCard({ icon, label, value, progress, tone }) {
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-sm text-gray-500">{label}</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-600">{label}</p>
           <h3 className="mt-2 text-3xl font-bold text-gray-900">{value}</h3>
         </div>
         <div className="grid h-10 w-10 place-items-center rounded-xl bg-white/80 shadow-sm">
@@ -145,12 +145,12 @@ function RoomCard({
 
   return (
     <Card
-      className={`relative overflow-visible border ${meta.border} bg-gradient-to-br ${meta.tint} p-5 transition duration-200 ease-out hover:-translate-y-1 hover:scale-[1.02] hover:shadow-xl`}
+      className={`relative overflow-visible border ${meta.border} bg-gradient-to-br ${meta.tint} p-5 transition duration-300 hover:shadow-xl`}
     >
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="text-2xl font-bold text-gray-900">{room.number}</h3>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-1 text-xs font-medium text-gray-600">
             {room.type} room - Floor {room.floor}, Wing {room.wing}
           </p>
         </div>
@@ -457,11 +457,11 @@ export default function RoomsInventory() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f7f6] p-6">
+    <div className="min-h-screen p-6 sm:p-8">
       <div className="space-y-6">
         <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-sm font-medium text-gray-500">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-green-700">
               Facility Management
             </p>
             <h1 className="mt-1 text-4xl font-bold tracking-tight text-gray-900">
