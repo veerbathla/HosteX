@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Pages
 import Landing from "../pages/Landing";
-import Login from "../pages/Login";
+import Auth from "../pages/Auth";
 
 // Layout
 import DashboardLayout from "../components/layout/DashboardLayout";
@@ -24,10 +24,11 @@ export default function AppRoutes() {
   return (
     <Router>
       <Routes>
-
         {/* Public Routes */}
         <Route path="/" element={<Landing />} />
-        <Route path="/login" element={<Login />} />
+
+        <Route path="/login" element={<Auth />} />
+        <Route path="/signup" element={<Auth />} />
 
         {/* Student Routes */}
         <Route path="/student" element={<DashboardLayout role="student" />}>
@@ -45,7 +46,6 @@ export default function AppRoutes() {
           <Route path="complaints" element={<AdminComplaints />} />
           <Route path="tasks" element={<StaffTasks />} />
         </Route>
-
       </Routes>
     </Router>
   );

@@ -1,4 +1,4 @@
-import { useApp } from "../../../../context/AppContext";
+import { useApp } from "../../../../context/useApp";
 import ActivityItem from "./ActivityItem";
 import { useNavigate } from "react-router-dom";
 

@@ -1,6 +1,5 @@
-import { createContext, useContext, useState } from "react";
-
-const AppContext = createContext();
+import { useState } from "react";
+import { AppContext } from "./appContextInstance";
 
 export function AppProvider({ children }) {
   const [complaints, setComplaints] = useState([
@@ -35,11 +34,8 @@ export function AppProvider({ children }) {
   };
 
   return (
-    <AppContext.Provider value={{ complaints, addComplaint,deleteComplaint }}>
+    <AppContext.Provider value={{ complaints, addComplaint, deleteComplaint }}>
       {children}
     </AppContext.Provider>
   );
 }
-
-export const useApp = () => useContext(AppContext);
-
