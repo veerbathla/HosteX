@@ -16,7 +16,7 @@ import ApplicationForm from "../features/student/pages/ApplicationForm";
 // Admin Pages
 import AdminDashboard from "../features/admin/pages/AdminDashboard";
 import Students from "../features/admin/pages/Students";
-import Rooms from "../features/admin/pages/Rooms";
+import Rooms from "../features/admin/pages/RoomsManagement";
 import AdminComplaints from "../features/admin/pages/Complaints";
 import StaffTasks from "../features/admin/pages/StaffTasks";
 

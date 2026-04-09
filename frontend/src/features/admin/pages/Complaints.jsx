@@ -1,6 +1,6 @@
 import React from "react";
 import { complaints } from "../../../data/dummyData";
-import StatsCard from "../../../components/ui/StatCard";
+import StatsCard from "../../../components/ui/StatsCard";
 import ComplaintsTable from "../components/complaints/ComplaintsTable";
 import SmartCard from "../components/complaints/SmartCard";
 
