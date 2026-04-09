@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -8,12 +8,15 @@ export default function Auth() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [mode, setMode] = useState(
-    location.pathname === "/signup" ? "signup" : "login",
-  );
+  const [mode, setMode] = useState("login");
   const [role, setRole] = useState("student");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Sync mode with URL
+  useEffect(() => {
+    setMode(location.pathname === "/signup" ? "signup" : "login");
+  }, [location.pathname]);
 
   const handleSubmit = () => {
     if (!email || !password) {
@@ -21,21 +24,24 @@ export default function Auth() {
       return;
     }
 
-    localStorage.setItem(
-      "user",
-      JSON.stringify({
-        email,
-        role,
-        isLoggedIn: true,
-      }),
-    );
+    // Fake auth (replace with backend later)
+    const userData = {
+      email,
+      role,
+      isLoggedIn: true,
+    };
 
+    localStorage.setItem("user", JSON.stringify(userData));
+
+    // Redirect based on role
     navigate(`/${role}/dashboard`);
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#e9f0ec]">
       <Card className="flex h-[550px] w-[900px] overflow-hidden p-0">
+
+        {/* Left Panel */}
         <div className="flex w-1/2 flex-col justify-center bg-gradient-to-br from-green-500 to-green-700 p-10 text-white">
           <h2 className="text-lg font-semibold">HosteX</h2>
 
@@ -50,16 +56,18 @@ export default function Auth() {
           </p>
         </div>
 
+        {/* Right Panel */}
         <div className="flex w-1/2 flex-col justify-center p-10">
           <h2 className="text-2xl font-bold">
             {mode === "login" ? "Login" : "Sign Up"}
           </h2>
 
-          <div className="mt-4 flex overflow-hidden rounded-lg bg-gray-100">
+          {/* Role Selector */}
+          <div className="mt-4 grid grid-cols-3 overflow-hidden rounded-lg bg-gray-100">
             <Button
               variant={role === "student" ? "secondary" : "ghost"}
               onClick={() => setRole("student")}
-              className="flex-1 rounded-none py-2"
+              className="rounded-none py-2"
             >
               Student
             </Button>
@@ -67,18 +75,27 @@ export default function Auth() {
             <Button
               variant={role === "admin" ? "secondary" : "ghost"}
               onClick={() => setRole("admin")}
-              className="flex-1 rounded-none py-2"
+              className="rounded-none py-2"
             >
               Admin
             </Button>
+
+            <Button
+              variant={role === "gatekeeper" ? "secondary" : "ghost"}
+              onClick={() => setRole("gatekeeper")}
+              className="rounded-none py-2"
+            >
+              Gatekeeper
+            </Button>
           </div>
 
+          {/* Inputs */}
           <div className="mt-6 space-y-4">
             <Input
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(event) => setEmail(event.target.value)}
+              onChange={(e) => setEmail(e.target.value)}
               className="px-3 py-2"
             />
 
@@ -86,7 +103,7 @@ export default function Auth() {
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className="px-3 py-2"
             />
 
@@ -95,6 +112,7 @@ export default function Auth() {
             </Button>
           </div>
 
+          {/* Switch Mode */}
           <div className="mt-4 text-center text-sm">
             {mode === "login" ? (
               <>
@@ -102,7 +120,7 @@ export default function Auth() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setMode("signup")}
+                  onClick={() => navigate("/signup")}
                   className="inline-flex p-0 text-green-600 hover:bg-transparent"
                 >
                   Sign Up
@@ -114,7 +132,7 @@ export default function Auth() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => setMode("login")}
+                  onClick={() => navigate("/login")}
                   className="inline-flex p-0 text-green-600 hover:bg-transparent"
                 >
                   Login
