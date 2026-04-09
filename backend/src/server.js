@@ -18,6 +18,8 @@ import { errorHandler } from "./middleware/error.middleware.js";
 import { connectDB } from "./dataBase/db.js";
 import entryRoutes from "./routes/entry.routes.js";
 
+import leaveRoutes from "./routes/leave.routes.js";
+
 import swaggerUi from "swagger-ui-express";
 import swaggerJsdoc from "swagger-jsdoc";
 
