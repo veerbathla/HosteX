@@ -6,7 +6,6 @@ import Hostel from "../schema/hostelSchema.js";
 export const createHostel = async (req, res) => {
     try {
         const hostel = await Hostel.create(req.body);
-        res.json(hostel);
         res.status(200).json({msg : "Hostel Created.. ",...hostel})
     } catch (error) {
          res.status(500).json({
