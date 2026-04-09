@@ -1,135 +1,213 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
+import { useToast } from "../components/feedback/toastContext";
+import { login, register } from "../services/api/authService";
+
+const dashboardByRole = {
+  admin: "/admin/dashboard",
+  student: "/student/dashboard",
+  gatekeeper: "/gatekeeper/dashboard",
+};
+
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Auth() {
   const location = useLocation();
-
-  const [mode, setMode] = useState(
-    location.pathname === "/signup" ? "signup" : "login",
-  );
-  const [role, setRole] = useState("student");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
-    if (!email || !password) {
-      alert("Enter all fields");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const { showToast } = useToast();
+  const mode = location.pathname === "/signup" ? "signup" : "login";
+  const from = location.state?.from?.pathname;
+
+  const validate = () => {
+    const nextErrors = {};
+
+    if (mode === "signup" && !name.trim()) {
+      nextErrors.name = "Name is required.";
+    }
+
+    if (!email.trim()) {
+      nextErrors.email = "Email is required.";
+    } else if (!emailPattern.test(email)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
+
+    if (!password) {
+      nextErrors.password = "Password is required.";
+    } else if (password.length < 6) {
+      nextErrors.password = "Password must be at least 6 characters.";
+    }
+
+    setFieldErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validate()) {
       return;
     }
 
-    const user = {
-      email,
-      role,
-      isLoggedIn: true,
-    };
+    setLoading(true);
+    setError("");
 
-    localStorage.setItem("user", JSON.stringify(user));
+    try {
+      const session =
+        mode === "login"
+          ? await login({ email: email.trim(), password })
+          : await register({ name: name.trim(), email: email.trim(), password, role: "student" });
 
-    // Redirect to the dashboard for the selected role.
-    navigate(`/${role}/dashboard`);
+      const resolvedRole = session?.data?.user?.role || session?.user?.role || session?.role || "student";
+      showToast({
+        title: mode === "login" ? "Welcome back" : "Account created",
+        message: "You are signed in securely.",
+        type: "success",
+      });
+      navigate(from || dashboardByRole[resolvedRole] || "/student/dashboard", {
+        replace: true,
+      });
+    } catch (apiError) {
+      const message = apiError.message || "Authentication failed. Please try again.";
+      setError(message);
+      showToast({ title: "Authentication failed", message, type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#e9f0ec]">
-      <div className="w-[900px] h-[550px] bg-white rounded-2xl shadow-lg flex overflow-hidden">
-        {/* LEFT */}
-        <div className="w-1/2 bg-gradient-to-br from-green-500 to-green-700 text-white p-10 flex flex-col justify-center">
+    <div className="flex min-h-screen items-center justify-center p-6 sm:p-8">
+      <Card className="flex w-full max-w-5xl flex-col overflow-hidden p-0 md:flex-row">
+
+        {/* Left Panel */}
+        <div className="flex min-h-56 flex-col justify-center bg-gradient-to-br from-green-500 to-green-700 p-8 text-white md:w-1/2 md:p-10">
           <h2 className="text-lg font-semibold">HosteX</h2>
 
-          <h1 className="text-3xl font-bold mt-6">
+          <h1 className="mt-6 text-3xl font-bold">
             {mode === "login" ? "Welcome Back" : "Create your account"}
           </h1>
 
-          <p className="text-sm mt-4">
+          <p className="mt-4 text-sm">
             {mode === "login"
               ? "Login to continue managing your hostel"
               : "Join the smart hostel management system"}
           </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="w-1/2 p-10 flex flex-col justify-center">
+        {/* Right Panel */}
+        <form onSubmit={handleSubmit} className="flex flex-col justify-center p-8 md:w-1/2 md:p-10">
           <h2 className="text-2xl font-bold">
             {mode === "login" ? "Login" : "Sign Up"}
           </h2>
 
-          {/* ROLE */}
-          <div className="flex mt-4 bg-gray-100 rounded-lg overflow-hidden">
-            <button
-              onClick={() => setRole("student")}
-              className={`flex-1 py-2 ${
-                role === "student" ? "bg-white shadow" : ""
-              }`}
-            >
-              Student
-            </button>
+          {mode === "signup" && (
+            <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
+              Public signup creates student accounts. Staff accounts must be created by an administrator.
+            </p>
+          )}
 
-            <button
-              onClick={() => setRole("admin")}
-              className={`flex-1 py-2 ${
-                role === "admin" ? "bg-white shadow" : ""
-              }`}
-            >
-              Admin
-            </button>
-          </div>
-
-          {/* FORM */}
+          {/* Inputs */}
           <div className="mt-6 space-y-4">
-            <input
+            {mode === "signup" && (
+              <Input
+                placeholder="Name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  setFieldErrors((current) => ({ ...current, name: "" }));
+                }}
+                className="px-3 py-2"
+              />
+            )}
+            {fieldErrors.name && (
+              <p className="text-xs font-medium text-red-600">{fieldErrors.name}</p>
+            )}
+
+            <Input
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border px-3 py-2 rounded-lg"
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setFieldErrors((current) => ({ ...current, email: "" }));
+              }}
+              className="px-3 py-2"
             />
+            {fieldErrors.email && (
+              <p className="text-xs font-medium text-red-600">{fieldErrors.email}</p>
+            )}
 
-            <input
+            <Input
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border px-3 py-2 rounded-lg"
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setFieldErrors((current) => ({ ...current, password: "" }));
+              }}
+              className="px-3 py-2"
             />
+            {fieldErrors.password && (
+              <p className="text-xs font-medium text-red-600">
+                {fieldErrors.password}
+              </p>
+            )}
 
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
-            >
-              {mode === "login" ? "Login" : "Create Account"}
-            </button>
+            {error && (
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+                {error}
+              </p>
+            )}
+
+            <Button type="submit" fullWidth disabled={loading}>
+              {loading
+                ? "Please wait..."
+                : mode === "login"
+                  ? "Login"
+                  : "Create Account"}
+            </Button>
           </div>
 
-          {/* SWITCH TEXT */}
-          <div className="text-sm text-center mt-4">
+          {/* Switch Mode */}
+          <div className="mt-4 text-center text-sm">
             {mode === "login" ? (
               <>
                 Don't have an account?{" "}
-                <span
-                  onClick={() => setMode("signup")}
-                  className="text-green-600 cursor-pointer"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/signup")}
+                  className="inline-flex p-0 text-green-600 hover:bg-transparent"
                 >
                   Sign Up
-                </span>
+                </Button>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <span
-                  onClick={() => setMode("login")}
-                  className="text-green-600 cursor-pointer"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate("/login")}
+                  className="inline-flex p-0 text-green-600 hover:bg-transparent"
                 >
                   Login
-                </span>
+                </Button>
               </>
             )}
           </div>
-        </div>
-      </div>
+        </form>
+      </Card>
     </div>
   );
 }
-

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import Button from "../ui/Button";
 
 export default function Navbar() {
   const navigate = useNavigate();
@@ -26,20 +27,20 @@ export default function Navbar() {
       {/* RIGHT */}
       <div className="flex items-center gap-6">
         {/* LOGIN */}
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate("/login")}
-          className="text-gray-600 text-sm font-medium hover:text-gray-800"
+          className="text-gray-600 hover:text-gray-800"
         >
           Login
-        </button>
+        </Button>
 
         
-        <button
+        <Button
           onClick={() => navigate("/signup")}
-          className="bg-gradient-to-r from-[#22c55e] to-[#15803d] text-white text-sm font-medium px-5 py-2 rounded-lg shadow hover:opacity-90"
         >
           Get Started
-        </button>
+        </Button>
       </div>
     </div>
   );

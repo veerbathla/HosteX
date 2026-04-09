@@ -1,4 +1,6 @@
-import { CreditCard, Utensils, Key, HelpCircle } from "lucide-react";
+import { CreditCard, HelpCircle, Key, Utensils } from "lucide-react";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
 
 export default function QuickActions() {
   const actions = [
@@ -9,20 +11,21 @@ export default function QuickActions() {
   ];
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)]">
-      <p className="text-xs text-gray-400 mb-4">QUICK UTILITIES</p>
+    <Card className="p-5">
+      <p className="mb-4 text-xs text-gray-400">QUICK UTILITIES</p>
 
       <div className="grid grid-cols-2 gap-4">
-        {actions.map((item, i) => (
-          <button
-            key={i}
-            className="flex flex-col items-center justify-center gap-2 bg-gray-100 p-4 rounded-xl hover:bg-green-50 hover:text-green-600 hover:scale-[1.05] transition-all"
+        {actions.map((item) => (
+          <Button
+            key={item.name}
+            variant="secondary"
+            className="flex-col gap-2 rounded-xl bg-gray-100 p-4 hover:scale-[1.05] hover:bg-green-50 hover:text-green-600"
           >
             {item.icon}
             <span className="text-sm font-medium">{item.name}</span>
-          </button>
+          </Button>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

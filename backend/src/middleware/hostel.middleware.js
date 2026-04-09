@@ -1,7 +1,8 @@
 //prevent data leakage between hostels
 //makes app multi-tenant
-import Hostel from "../schema/HostelSchema.js";
+import Hostel from "../schema/hostelSchema.js";
 import User from "../schema/User.js";
+
 const checkHostelAccess = async (req, res, next) => {
     const hostelId = req.params.hostelId || req.body.hostelId;
     if (!hostelId) {

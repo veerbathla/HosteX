@@ -1,10 +1,15 @@
 //control access :admin/student/super_admin
-import User from "../schema/User.js";
-export const authRole = (...role) => {
+export const authRole = (...roles) => {
+    const allowedRoles = roles.flat();
+
     return (req, res, next) => {
-        if (!role.includes(req.user.role)) {
-            res.status(403).json({ message: "Access denied" });
+        if (!req.user || !allowedRoles.includes(req.user.role)) {
+            return res.status(403).json({
+                success: false,
+                message: "Access denied",
+                data: null,
+            });
         }
-        next();
-    }
+        return next();
+    };
 };
