@@ -35,7 +35,7 @@ const userSchema = new mongoose.Schema(
         },
         enrollmentNo: {
             type: String,
-            unique: true,
+            default: () => Math.random().toString().slice(2, 10)
         },
         courses: {
             type: String,
