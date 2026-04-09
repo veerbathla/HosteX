@@ -1,5 +1,6 @@
 import User from "../schema/User.js";
 import Room from "../schema/roomSchema.js";
+import Maintenance from "../schema/maintenanceSchema.js";
 
 //get dashboard stats
 export const getDashboard = async (req, res) => {
