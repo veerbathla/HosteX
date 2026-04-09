@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import Input from "../components/ui/Input";
 
 export default function Auth() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [mode, setMode] = useState(
     location.pathname === "/signup" ? "signup" : "login",
@@ -12,124 +15,115 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const navigate = useNavigate();
-
   const handleSubmit = () => {
     if (!email || !password) {
       alert("Enter all fields");
       return;
     }
 
-    const user = {
-      email,
-      role,
-      isLoggedIn: true,
-    };
+    localStorage.setItem(
+      "user",
+      JSON.stringify({
+        email,
+        role,
+        isLoggedIn: true,
+      }),
+    );
 
-    localStorage.setItem("user", JSON.stringify(user));
-
-    // Redirect to the dashboard for the selected role.
     navigate(`/${role}/dashboard`);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#e9f0ec]">
-      <div className="w-[900px] h-[550px] bg-white rounded-2xl shadow-lg flex overflow-hidden">
-        {/* LEFT */}
-        <div className="w-1/2 bg-gradient-to-br from-green-500 to-green-700 text-white p-10 flex flex-col justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-[#e9f0ec]">
+      <Card className="flex h-[550px] w-[900px] overflow-hidden p-0">
+        <div className="flex w-1/2 flex-col justify-center bg-gradient-to-br from-green-500 to-green-700 p-10 text-white">
           <h2 className="text-lg font-semibold">HosteX</h2>
 
-          <h1 className="text-3xl font-bold mt-6">
+          <h1 className="mt-6 text-3xl font-bold">
             {mode === "login" ? "Welcome Back" : "Create your account"}
           </h1>
 
-          <p className="text-sm mt-4">
+          <p className="mt-4 text-sm">
             {mode === "login"
               ? "Login to continue managing your hostel"
               : "Join the smart hostel management system"}
           </p>
         </div>
 
-        {/* RIGHT */}
-        <div className="w-1/2 p-10 flex flex-col justify-center">
+        <div className="flex w-1/2 flex-col justify-center p-10">
           <h2 className="text-2xl font-bold">
             {mode === "login" ? "Login" : "Sign Up"}
           </h2>
 
-          {/* ROLE */}
-          <div className="flex mt-4 bg-gray-100 rounded-lg overflow-hidden">
-            <button
+          <div className="mt-4 flex overflow-hidden rounded-lg bg-gray-100">
+            <Button
+              variant={role === "student" ? "secondary" : "ghost"}
               onClick={() => setRole("student")}
-              className={`flex-1 py-2 ${
-                role === "student" ? "bg-white shadow" : ""
-              }`}
+              className="flex-1 rounded-none py-2"
             >
               Student
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant={role === "admin" ? "secondary" : "ghost"}
               onClick={() => setRole("admin")}
-              className={`flex-1 py-2 ${
-                role === "admin" ? "bg-white shadow" : ""
-              }`}
+              className="flex-1 rounded-none py-2"
             >
               Admin
-            </button>
+            </Button>
           </div>
 
-          {/* FORM */}
           <div className="mt-6 space-y-4">
-            <input
+            <Input
               type="email"
               placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full border px-3 py-2 rounded-lg"
+              onChange={(event) => setEmail(event.target.value)}
+              className="px-3 py-2"
             />
 
-            <input
+            <Input
               type="password"
               placeholder="Password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border px-3 py-2 rounded-lg"
+              onChange={(event) => setPassword(event.target.value)}
+              className="px-3 py-2"
             />
 
-            <button
-              onClick={handleSubmit}
-              className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
-            >
+            <Button onClick={handleSubmit} fullWidth>
               {mode === "login" ? "Login" : "Create Account"}
-            </button>
+            </Button>
           </div>
 
-          {/* SWITCH TEXT */}
-          <div className="text-sm text-center mt-4">
+          <div className="mt-4 text-center text-sm">
             {mode === "login" ? (
               <>
                 Don't have an account?{" "}
-                <span
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setMode("signup")}
-                  className="text-green-600 cursor-pointer"
+                  className="inline-flex p-0 text-green-600 hover:bg-transparent"
                 >
                   Sign Up
-                </span>
+                </Button>
               </>
             ) : (
               <>
                 Already have an account?{" "}
-                <span
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={() => setMode("login")}
-                  className="text-green-600 cursor-pointer"
+                  className="inline-flex p-0 text-green-600 hover:bg-transparent"
                 >
                   Login
-                </span>
+                </Button>
               </>
             )}
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
-

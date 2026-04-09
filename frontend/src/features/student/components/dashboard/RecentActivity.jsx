@@ -1,28 +1,30 @@
+import { useNavigate } from "react-router-dom";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
 import { useApp } from "../../../../context/useApp";
 import ActivityItem from "./ActivityItem";
-import { useNavigate } from "react-router-dom";
 
 export default function RecentActivity() {
   const { complaints } = useApp();
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
-
-      <div className="flex justify-between items-center">
+    <Card className="p-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-lg">Recent Activity</h2>
+          <h2 className="text-lg font-semibold">Recent Activity</h2>
           <p className="text-sm text-gray-500">
             Manage and track your service requests
           </p>
         </div>
 
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate("/student/complaints")}
-          className="text-green-600 text-sm font-medium"
+          className="text-sm font-medium text-green-600"
         >
           + New Complaint
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 space-y-4">
@@ -30,6 +32,6 @@ export default function RecentActivity() {
           <ActivityItem key={item.id} {...item} />
         ))}
       </div>
-    </div>
+    </Card>
   );
 }

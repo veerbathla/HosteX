@@ -1,18 +1,20 @@
-import React from "react";
+import Button from "./Button";
 
 const Modal = ({ isOpen, onClose, children }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-xl w-[400px] relative">
-        
-        <button
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      <div className="relative w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500"
+          className="absolute right-2 top-2 text-gray-500 hover:text-gray-800"
+          aria-label="Close modal"
         >
-          ✕
-        </button>
+          X
+        </Button>
 
         {children}
       </div>

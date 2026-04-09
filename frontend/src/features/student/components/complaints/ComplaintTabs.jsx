@@ -1,21 +1,21 @@
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+
 export default function ComplaintTabs({ active, setActive }) {
   const tabs = ["all", "pending", "progress", "resolved"];
 
   return (
-    <div className="flex gap-4 bg-white p-3 rounded-xl shadow">
+    <Card className="flex gap-4 p-3">
       {tabs.map((tab) => (
-        <button
+        <Button
           key={tab}
+          variant={active === tab ? "primary" : "ghost"}
           onClick={() => setActive(tab)}
-          className={`px-4 py-2 rounded-lg text-sm capitalize transition ${
-            active === tab
-              ? "bg-green-600 text-white"
-              : "text-gray-500 hover:bg-gray-100"
-          }`}
+          className="capitalize"
         >
           {tab}
-        </button>
+        </Button>
       ))}
-    </div>
+    </Card>
   );
 }
