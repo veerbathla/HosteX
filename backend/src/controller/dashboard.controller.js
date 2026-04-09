@@ -1,6 +1,6 @@
 import User from "../schema/User.js";
 import Room from "../schema/roomSchema.js";
-import Maintenance from "../schema/maintenanceSchema.js";
+import Complaint from "../schema/complaintSchema.js";
 
 //get dashboard stats
 export const getDashboard = async (req, res) => {
@@ -23,9 +23,10 @@ export const getDashboard = async (req, res) => {
             ...filter,
             role: "admin",
         });
-        const pendingComplaints = await Maintenance.countDocuments({
+        const totalComplaints = await Complaint.countDocuments(filter);
+        const pendingComplaints = await Complaint.countDocuments({
             ...filter,
-            status: "pending",
+            status: { $in: ["pending", "in_progress"] },
         });
         return res.status(200).json({
             success: true,
@@ -36,7 +37,10 @@ export const getDashboard = async (req, res) => {
                 totalOccupiedRooms,
                 totalVacantRooms,
                 totalAdmins,
+                totalComplaints,
                 pendingComplaints,
+                urgentComplaints: pendingComplaints,
+                staffTasks: pendingComplaints,
             },
         });
     }

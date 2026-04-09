@@ -86,7 +86,10 @@ export const createUser = async (req, res) => {
 export const getUsers = async (req, res) => {
     try {
           const filter = req.user?.hostelId ? { hostelId: req.user.hostelId } : {};
-          const users = await User.find(filter).select("-password").sort({ createdAt: -1 });
+          const users = await User.find(filter)
+            .populate("roomlId", "roomNo floor capacity type")
+            .select("-password")
+            .sort({ createdAt: -1 });
           return res.status(200).json({
             success: true,
             message: "Users fetched successfully",

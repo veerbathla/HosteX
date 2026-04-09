@@ -13,13 +13,15 @@ import {
   Wifi,
   Wrench,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
 import { rooms as initialRooms } from "../../../data/roomsData";
+import { createRoom, getRooms, updateRoom } from "../../../services/api/roomService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 
 const roomTypes = ["Single", "Double", "Triple", "Studio"];
 
@@ -28,12 +30,14 @@ const seedRoom = (room, index) => ({
   wing: room.number?.split("-")[0] || "A",
   type: roomTypes[index % roomTypes.length],
   student:
-    room.status === "occupied"
+    room.student ||
+    (room.occupants > 0
       ? ["Liam Henderson", "Elena Moretti", "Aarav Mehta"][index % 3]
-      : "",
+      : ""),
   studentInitials:
-    room.status === "occupied" ? ["LH", "EM", "AM"][index % 3] : "",
-  assignedSince: ["Sep 22", "Oct 12", "Nov 04"][index % 3],
+    room.studentInitials ||
+    (room.occupants > 0 ? ["LH", "EM", "AM"][index % 3] : ""),
+  assignedSince: room.assignedSince || (room.occupants > 0 ? ["Sep 22", "Oct 12", "Nov 04"][index % 3] : ""),
   maintenanceNote:
     room.status === "maintenance"
       ? ["HVAC inspection", "Deep clean scheduled", "Plumbing check"][index % 3]
@@ -177,7 +181,7 @@ function RoomCard({
       </div>
 
       <div className="mt-5 min-h-[68px]">
-        {room.status === "occupied" && (
+        {room.student && room.occupants > 0 && room.status !== "maintenance" && (
           <div className="flex items-center gap-3 rounded-xl bg-white/70 p-3">
             <div className="grid h-10 w-10 place-items-center rounded-full bg-green-100 text-sm font-bold text-green-800">
               {room.studentInitials || "ST"}
@@ -309,6 +313,8 @@ function RoomCard({
 
 export default function RoomsInventory() {
   const [rooms, setRooms] = useState(() => initialRooms.map(seedRoom));
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [floor, setFloor] = useState("all");
   const [wing, setWing] = useState("all");
@@ -324,7 +330,35 @@ export default function RoomsInventory() {
     type: "Single",
   });
 
-  const stats = useMemo(() => {
+  useEffect(() => {
+    let active = true;
+
+    async function loadRooms() {
+      setLoading(true);
+      setApiNotice("");
+
+      try {
+        const data = await getRooms();
+        if (active) {
+          setRooms(data.length ? data.map(seedRoom) : []);
+        }
+      } catch (error) {
+        if (active) {
+          setApiNotice(`${getErrorMessage(error)} Showing local room data.`);
+        }
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadRooms();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+      const stats = useMemo(() => {
     const totalCapacity = rooms.reduce((sum, room) => sum + room.capacity, 0);
     const available = rooms.reduce((sum, room) => {
       if (room.status === "maintenance") return sum;
@@ -359,62 +393,75 @@ export default function RoomsInventory() {
 
   const closeModal = () => setModal({ type: null, room: null });
 
-  const assignRoom = (room) => {
+  const replaceRoom = (updatedRoom) => {
     setRooms((prev) =>
-      prev.map((current) => {
-        if (current.id !== room.id) return current;
-        const occupants = Math.min(current.occupants + 1, current.capacity);
-
-        return {
-          ...current,
-          occupants,
-          status: occupants >= current.capacity ? "occupied" : "available",
-          student: current.student || "New Resident",
-          studentInitials: current.studentInitials || "NR",
-          assignedSince: "Today",
-        };
-      }),
-    );
-    setActiveMenu(null);
-    closeModal();
-    showMessage(`Room ${room.number} assigned.`);
-  };
-
-  const markMaintenance = (room) => {
-    setRooms((prev) =>
-      prev.map((current) =>
-        current.id === room.id
-          ? {
-              ...current,
-              status: "maintenance",
-              maintenanceNote: "Maintenance scheduled",
-            }
-          : current,
+      prev.map((current, index) =>
+        current.id === updatedRoom.id ? seedRoom(updatedRoom, index) : current,
       ),
     );
-    setActiveMenu(null);
-    closeModal();
-    showMessage(`Room ${room.number} moved to maintenance.`);
   };
 
-  const markAvailable = (room) => {
-    setRooms((prev) =>
-      prev.map((current) => {
-        if (current.id !== room.id) return current;
-
-        return {
-          ...current,
-          maintenanceNote: "",
-          status: current.occupants >= current.capacity ? "occupied" : "available",
-        };
-      }),
-    );
-    setActiveMenu(null);
-    closeModal();
-    showMessage(`Room ${room.number} is back in service.`);
+  const assignRoom = async (room) => {
+    try {
+      const updatedRoom = await updateRoom(room.id, {
+        currentOccupancy: Math.min(room.occupants + 1, room.capacity),
+        status: "occupied",
+        assignedStudentName: room.student || "New Resident",
+        assignedStudentInitials: room.studentInitials || "NR",
+        assignedSince: room.assignedSince || "Today",
+        maintenanceNote: "",
+      });
+      replaceRoom(updatedRoom);
+      setApiNotice("");
+      setActiveMenu(null);
+      closeModal();
+      showMessage(`Room ${room.number} assigned.`);
+    } catch (error) {
+      setApiNotice(getErrorMessage(error, "Room assignment could not be saved."));
+    }
   };
 
-  const addRoom = () => {
+  const markMaintenance = async (room) => {
+    try {
+      const updatedRoom = await updateRoom(room.id, {
+        currentOccupancy: room.occupants,
+        status: "maintenance",
+        assignedStudentName: room.student || "",
+        assignedStudentInitials: room.studentInitials || "",
+        assignedSince: room.assignedSince || "",
+        maintenanceNote: room.maintenanceNote || "Maintenance scheduled",
+      });
+      replaceRoom(updatedRoom);
+      setApiNotice("");
+      setActiveMenu(null);
+      closeModal();
+      showMessage(`Room ${room.number} moved to maintenance.`);
+    } catch (error) {
+      setApiNotice(getErrorMessage(error, "Room status could not be saved."));
+    }
+  };
+
+  const markAvailable = async (room) => {
+    try {
+      const updatedRoom = await updateRoom(room.id, {
+        currentOccupancy: room.occupants,
+        status: room.occupants > 0 ? "occupied" : "available",
+        assignedStudentName: room.student || "",
+        assignedStudentInitials: room.studentInitials || "",
+        assignedSince: room.assignedSince || "",
+        maintenanceNote: "",
+      });
+      replaceRoom(updatedRoom);
+      setApiNotice("");
+      setActiveMenu(null);
+      closeModal();
+      showMessage(`Room ${room.number} is back in service.`);
+    } catch (error) {
+      setApiNotice(getErrorMessage(error, "Room status could not be saved."));
+    }
+  };
+
+  const addRoom = async () => {
     const number = form.number.trim().toUpperCase();
     const capacity = Number(form.capacity);
 
@@ -428,23 +475,22 @@ export default function RoomsInventory() {
       return;
     }
 
-    setRooms((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
+    try {
+      const createdRoom = await createRoom({
         number,
         capacity,
-        occupants: 0,
-        status: "available",
         floor: form.floor,
         wing: form.wing,
         type: form.type,
-        student: "",
-        studentInitials: "",
-        assignedSince: "",
-        maintenanceNote: "",
-      },
-    ]);
+      });
+
+      setRooms((prev) => [...prev, seedRoom(createdRoom, prev.length)]);
+      showMessage(`Room ${number} added.`);
+    } catch (error) {
+      setApiNotice(`${getErrorMessage(error)} Room was not created.`);
+      return;
+    }
+
     setForm({
       number: "",
       capacity: "2",
@@ -453,7 +499,6 @@ export default function RoomsInventory() {
       type: "Single",
     });
     closeModal();
-    showMessage(`Room ${number} added.`);
   };
 
   return (
@@ -481,6 +526,12 @@ export default function RoomsInventory() {
         {message && (
           <div className="rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">
             {message}
+          </div>
+        )}
+
+        {apiNotice && (
+          <div className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">
+            {apiNotice}
           </div>
         )}
 
@@ -562,7 +613,13 @@ export default function RoomsInventory() {
           </div>
         </Card>
 
-        {viewMode === "grid" ? (
+        {loading ? (
+          <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            {[1, 2, 3, 4].map((item) => (
+              <Card key={item} className="h-64 animate-pulse bg-gray-100" />
+            ))}
+          </section>
+        ) : viewMode === "grid" ? (
           <section className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {filteredRooms.map((room) => (
               <RoomCard
@@ -619,7 +676,7 @@ export default function RoomsInventory() {
           </Card>
         )}
 
-        {filteredRooms.length === 0 && (
+        {!loading && filteredRooms.length === 0 && (
           <Card className="p-10 text-center text-sm text-gray-500">
             No rooms match the selected filters.
           </Card>

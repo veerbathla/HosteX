@@ -20,6 +20,7 @@ export function normalizeComplaint(complaint) {
     student: studentName,
     initials: complaint.initials || initialsFromName(studentName),
     room:
+      complaint.roomId?.roomNo ||
       complaint.roomId?.roomNumber ||
       complaint.roomlId?.roomNumber ||
       complaint.room ||

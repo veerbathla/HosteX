@@ -1,5 +1,5 @@
 import express from "express";
-import { createRoom, getRooms } from "../controller/room.controller.js";
+import { createRoom, getMyRoom, getRooms, updateRoom } from "../controller/room.controller.js";
 import { protect } from "../middleware/auth.middleware.js";
 import { authRole } from "../middleware/role.middleware.js";
 const router = express.Router();
@@ -36,6 +36,8 @@ const router = express.Router();
  *         description: Server error
  */
 router.post("/", protect, authRole("admin", "super_admin"), createRoom);
+router.get("/my", protect, authRole("student"), getMyRoom);
+router.patch("/:id", protect, authRole("admin", "super_admin"), updateRoom);
 /**
  * @swagger
  * /api/rooms:

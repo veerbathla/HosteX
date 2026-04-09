@@ -39,6 +39,8 @@ const safeUser = (user) => ({
     email: user.email,
     role: user.role,
     hostelId: user.hostelId,
+    enrollmentNo: user.enrollmentNo,
+    roomlId: user.roomlId,
 });
 
 const authResponse = (user, message) => {

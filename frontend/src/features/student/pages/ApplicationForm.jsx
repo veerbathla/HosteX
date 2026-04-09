@@ -1,25 +1,49 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
 import { useToast } from "../../../components/feedback/toastContext";
+import { getCurrentUser } from "../../../services/api/authService";
 import { createComplaint } from "../../../services/api/complaintService";
+import { getMyRoom } from "../../../services/api/roomService";
 
 export default function ApplicationForm() {
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const currentUser = getCurrentUser();
 
   const [form, setForm] = useState({
-    name: "Alex Rivera",
-    studentId: "STU-2024-8842",
+    name: currentUser?.name || "",
+    studentId: currentUser?.enrollmentNo || currentUser?._id || "",
     room: "",
     type: "",
     reason: "",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadMyRoom() {
+      try {
+        const room = await getMyRoom();
+        if (active && room?.number) {
+          setForm((current) => ({ ...current, room: room.number }));
+        }
+      } catch {
+        // Keep manual room entry available when the room API is unavailable.
+      }
+    }
+
+    loadMyRoom();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

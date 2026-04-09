@@ -15,6 +15,7 @@ import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
 import { complaints as initialComplaints } from "../../../data/dummyData";
 import {
+  createComplaint,
   getAllComplaints,
   updateComplaintStatus,
 } from "../../../services/api/complaintService";
@@ -188,37 +189,60 @@ export default function Complaints() {
     showMessage("Complaint escalated to high priority.");
   };
 
-  const saveComplaint = () => {
+  const saveComplaint = async () => {
     if (!form.title.trim() || !form.student.trim() || !form.room.trim()) {
       showMessage("Please fill title, student, and room.");
       return;
     }
 
     if (modal.type === "create") {
-      const initials = form.student
-        .split(" ")
-        .map((part) => part[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
-
-      setComplaints((prev) => [
-        {
-          id: Date.now(),
+      try {
+        const created = await createComplaint({
           title: form.title.trim(),
-          student: form.student.trim(),
-          initials,
-          room: form.room.trim(),
+          description: `${form.student.trim()} - ${form.room.trim()}`,
           priority: form.priority,
-          status: form.status,
-          time: "Just now",
-        },
-        ...prev,
-      ]);
-      showMessage("New complaint created.");
+        });
+
+        setComplaints((prev) => [
+          {
+            ...created,
+            student: form.student.trim(),
+            room: form.room.trim(),
+            priority: form.priority,
+            status: form.status,
+            time: created.time || "Just now",
+          },
+          ...prev,
+        ]);
+
+        if (form.status !== "new") {
+          const updated = await updateComplaintStatus(created.id, form.status);
+          setComplaints((prev) =>
+            prev.map((complaint) =>
+              complaint.id === created.id
+                ? { ...complaint, status: updated.status }
+                : complaint,
+            ),
+          );
+        }
+
+        showMessage("New complaint created.");
+      } catch (error) {
+        showMessage(error.message || "Complaint could not be created.");
+        return;
+      }
     }
 
     if (modal.type === "edit") {
+      try {
+        if (form.status !== modal.complaint.status) {
+          await updateComplaintStatus(modal.complaint.id, form.status);
+        }
+      } catch (error) {
+        showMessage(error.message || "Complaint status could not be updated.");
+        return;
+      }
+
       setComplaints((prev) =>
         prev.map((complaint) =>
           complaint.id === modal.complaint.id

@@ -1,10 +1,16 @@
 import Complaint from "../schema/complaintSchema.js";
 import mongoose from "mongoose";
+import Room from "../schema/roomSchema.js";
+
+const complaintPopulate = [
+    { path: "userId", select: "name email enrollmentNo" },
+    { path: "roomId", select: "roomNo floor capacity type" },
+];
 
 // Create complaint (Student)
 export const createComplaint = async (req, res) => {
     try {
-        const { title, description, hostelId, roomId } = req.body;
+        const { title, description, hostelId, roomId, room, priority } = req.body;
 
         if (!title?.trim() || !description?.trim()) {
             return res.status(400).json({
@@ -14,18 +20,38 @@ export const createComplaint = async (req, res) => {
             });
         }
 
+        let resolvedRoomId = roomId;
+
+        if (!resolvedRoomId && room?.trim()) {
+            const matchingRoom = await Room.findOne({
+                hostelId: hostelId || req.user.hostelId,
+                roomNo: room.trim(),
+            }).select("_id");
+
+            if (matchingRoom) {
+                resolvedRoomId = matchingRoom._id;
+            }
+        }
+
+        if (!resolvedRoomId && req.user.roomlId) {
+            resolvedRoomId = req.user.roomlId;
+        }
+
         const complaint = await Complaint.create({
             userId: req.user._id,
             title: title.trim(),
             description: description.trim(),
             hostelId: hostelId || req.user.hostelId,
-            roomId,
+            roomId: resolvedRoomId,
+            priority: priority || "medium",
         });
+
+        const populatedComplaint = await Complaint.findById(complaint._id).populate(complaintPopulate);
 
         return res.status(201).json({
             success: true,
             message: "Complaint created successfully",
-            data: complaint,
+            data: populatedComplaint,
         });
     } catch (error) {
         return res.status(500).json({
@@ -39,8 +65,9 @@ export const createComplaint = async (req, res) => {
 //  Get all complaints (Admin)
 export const getAllComplaints = async (req, res) => {
     try {
-        const complaints = await Complaint.find()
-            .populate("userId", "name email")
+        const filter = req.user.hostelId ? { hostelId: req.user.hostelId } : {};
+        const complaints = await Complaint.find(filter)
+            .populate(complaintPopulate)
             .sort({ createdAt: -1 });
 
         return res.status(200).json({
@@ -62,7 +89,9 @@ export const getMyComplaints = async (req, res) => {
     try {
         const complaints = await Complaint.find({
             userId: req.user._id,
-        });
+        })
+            .populate(complaintPopulate)
+            .sort({ createdAt: -1 });
 
         return res.status(200).json({
             success: true,
@@ -114,10 +143,12 @@ export const updateComplaintStatus = async (req, res) => {
 
         await complaint.save();
 
+        const updatedComplaint = await Complaint.findById(complaint._id).populate(complaintPopulate);
+
         return res.status(200).json({
             success: true,
             message: "Complaint updated successfully",
-            data: complaint,
+            data: updatedComplaint,
         });
     } catch (error) {
         return res.status(500).json({

@@ -11,7 +11,9 @@ export function normalizeStudent(user) {
     course: user.courses || user.course || "Hostel Admission",
     year: user.year ? `Year ${user.year}` : user.year || "N/A",
     room:
+      user.roomlId?.roomNo ||
       user.roomlId?.roomNumber ||
+      user.roomId?.roomNo ||
       user.roomId?.roomNumber ||
       user.room ||
       "Unassigned",

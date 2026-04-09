@@ -12,17 +12,28 @@ import RecentActivity from "../components/dashboard/RecentActivity";
 import LunchCard from "../components/dashboard/LunchCard";
 import QuickActions from "../components/dashboard/QuickActions";
 import { getMyComplaints } from "../../../services/api/complaintService";
+import { getMyRoom } from "../../../services/api/roomService";
 
 export default function StudentDashboard() {
   const [complaints, setComplaints] = useState([]);
+  const [room, setRoom] = useState(null);
 
   useEffect(() => {
     let active = true;
 
     async function loadStats() {
       try {
-        const data = await getMyComplaints();
-        if (active) setComplaints(data);
+        const [complaintData, roomData] = await Promise.allSettled([
+          getMyComplaints(),
+          getMyRoom(),
+        ]);
+
+        if (!active) return;
+
+        setComplaints(
+          complaintData.status === "fulfilled" ? complaintData.value : [],
+        );
+        setRoom(roomData.status === "fulfilled" ? roomData.value : null);
       } catch {
         if (active) setComplaints([]);
       }
@@ -53,8 +64,8 @@ export default function StudentDashboard() {
       <div className="grid grid-cols-4 gap-6 mt-6">
         <StatsCard
           title="Room Status"
-          value="Room 204"
-          subtitle="Active Resident"
+          value={room?.number || "No Room"}
+          subtitle={room ? `${room.occupants}/${room.capacity} occupied` : "Room not assigned"}
           icon={<BedDouble size={18} />}
           type="success"
         />
