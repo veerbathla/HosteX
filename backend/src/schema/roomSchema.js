@@ -10,7 +10,6 @@ const roomSchema = new mongoose.Schema(
         hostelId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Hostel",
-            unique: true,
         },
         floor: {
             type: Number,
@@ -23,6 +22,11 @@ const roomSchema = new mongoose.Schema(
         currentOccupancy: {
             type: Number,
             default: 0,
+        },
+        status: {
+            type: String,
+            enum: ["available", "occupied", "maintenance"],
+            default: "available",
         },
         isOccupied: {
             type: Boolean,
@@ -39,7 +43,29 @@ const roomSchema = new mongoose.Schema(
             enum: ["single", "double", "triple", "quad"],
             default: "single",
         },
+        assignedStudentName: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        assignedStudentInitials: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        assignedSince: {
+            type: String,
+            default: "",
+            trim: true,
+        },
+        maintenanceNote: {
+            type: String,
+            default: "",
+            trim: true,
+        },
     }
+,
+    { timestamps: true }
 )
 
 export default mongoose.model("Room", roomSchema);
