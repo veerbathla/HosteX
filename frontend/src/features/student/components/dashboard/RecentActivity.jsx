@@ -1,35 +1,68 @@
-import { useApp } from "../../../../context/AppContext";
-import ActivityItem from "./ActivityItem";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Button from "../../../../components/ui/Button";
+import Card from "../../../../components/ui/Card";
+import { getMyComplaints } from "../../../../services/api/complaintService";
+import ActivityItem from "./ActivityItem";
 
 export default function RecentActivity() {
-  const { complaints } = useApp();
+  const [complaints, setComplaints] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  return (
-    <div className="bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)]">
+  useEffect(() => {
+    let active = true;
 
-      <div className="flex justify-between items-center">
+    async function loadComplaints() {
+      try {
+        const data = await getMyComplaints();
+        if (active) setComplaints(data.slice(0, 3));
+      } catch {
+        if (active) setComplaints([]);
+      } finally {
+        if (active) setLoading(false);
+      }
+    }
+
+    loadComplaints();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  return (
+    <Card className="p-6">
+      <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-semibold text-lg">Recent Activity</h2>
+          <h2 className="text-lg font-semibold">Recent Activity</h2>
           <p className="text-sm text-gray-500">
             Manage and track your service requests
           </p>
         </div>
 
-        <button
+        <Button
+          variant="ghost"
           onClick={() => navigate("/student/complaints")}
-          className="text-green-600 text-sm font-medium"
+          className="text-sm font-medium text-green-600"
         >
           + New Complaint
-        </button>
+        </Button>
       </div>
 
       <div className="mt-4 space-y-4">
-        {complaints.slice(0, 3).map((item) => (
-          <ActivityItem key={item.id} {...item} />
-        ))}
+        {loading ? (
+          [1, 2, 3].map((item) => (
+            <div key={item} className="h-12 animate-pulse rounded-lg bg-gray-100" />
+          ))
+        ) : complaints.length ? (
+          complaints.map((item) => <ActivityItem key={item.id} {...item} />)
+        ) : (
+          <p className="rounded-lg bg-gray-50 px-4 py-3 text-sm text-gray-500">
+            No recent requests yet.
+          </p>
+        )}
       </div>
-    </div>
+    </Card>
   );
 }

@@ -43,6 +43,6 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.get("/", getDashboard);
+router.get("/", protect, authRole("admin", "super_admin"), getDashboard);
 
 export default router;

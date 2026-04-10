@@ -4,6 +4,8 @@ import {
     markExit,
     getVisitors,
 } from "../controller/visitor.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authRole } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -40,7 +42,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/entry", createEntry);
+router.post("/entry", protect, authRole("admin", "super_admin", "gatekeeper", "student"), createEntry);
 /**
  * @swagger
  * /api/visitors/exit/{id}:
@@ -60,7 +62,7 @@ router.post("/entry", createEntry);
  *       500:
  *         description: Server error
  */
-router.put("/exit/:id", markExit);
+router.put("/exit/:id", protect, authRole("admin", "super_admin", "gatekeeper"), markExit);
 /**
  * @swagger
  * /api/visitors:
@@ -98,6 +100,6 @@ router.put("/exit/:id", markExit);
  *       500:
  *         description: Server error
  */
-router.get("/", getVisitors);
+router.get("/", protect, authRole("admin", "super_admin", "gatekeeper"), getVisitors);
 
 export default router;

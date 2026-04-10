@@ -5,16 +5,32 @@ export const studentExit = async (req, res) => {
     try {
         const { studentId, hostelId } = req.body;
 
+        if (!studentId) {
+            return res.status(400).json({
+                success: false,
+                message: "Student ID is required",
+                data: null,
+            });
+        }
+
         const entry = await Entry.create({
             studentId,
-            hostelId,
+            hostelId: hostelId || req.user?.hostelId,
             exitTime: new Date(),
             status: "out",
         });
 
-        res.status(201).json(entry);
+        return res.status(201).json({
+            success: true,
+            message: "Student exit recorded",
+            data: entry,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to mark student exit",
+            data: null,
+        });
     }
 };
 
@@ -23,15 +39,32 @@ export const studentEntry = async (req, res) => {
     try {
         const { studentId } = req.body;
 
+        if (!studentId) {
+            return res.status(400).json({
+                success: false,
+                message: "Student ID is required",
+                data: null,
+            });
+        }
+
         const entry = await Entry.create({
             studentId,
+            hostelId: req.body.hostelId || req.user?.hostelId,
             entryTime: new Date(),
             status: "in",
         });
 
-        res.status(201).json(entry);
+        return res.status(201).json({
+            success: true,
+            message: "Student entry recorded",
+            data: entry,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to mark student entry",
+            data: null,
+        });
     }
 };
 
@@ -42,8 +75,16 @@ export const getLogs = async (req, res) => {
             .populate("studentId", "name email")
             .sort({ createdAt: -1 });
 
-        res.json(logs);
+        return res.status(200).json({
+            success: true,
+            message: "Entry logs fetched successfully",
+            data: logs,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch entry logs",
+            data: null,
+        });
     }
 };

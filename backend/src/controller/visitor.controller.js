@@ -1,28 +1,63 @@
 import Visitor from "../schema/visitorSchema.js";
+import mongoose from "mongoose";
 
 // 🚪 Visitor Entry
 export const createEntry = async (req, res) => {
     try {
+        const { name, phone, purpose, visitingTo, hostelId } = req.body;
+
+        if (!name?.trim() || !phone?.trim() || !purpose?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message: "Name, phone, and purpose are required",
+                data: null,
+            });
+        }
+
         const visitor = await Visitor.create({
-            ...req.body,
+            name: name.trim(),
+            phone: phone.trim(),
+            purpose: purpose.trim(),
+            visitingTo,
+            hostelId: hostelId || req.user?.hostelId,
             entryTime: new Date(),
             status: "entered",
         });
 
-        res.status(201).json(visitor);
+        return res.status(201).json({
+            success: true,
+            message: "Visitor entry created successfully",
+            data: visitor,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to create visitor entry",
+            data: null,
+        });
     }
 };
 
 // 🚶 Visitor Exit
 export const markExit = async (req, res) => {
     try {
+        if (!mongoose.isValidObjectId(req.params.id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid visitor id",
+                data: null,
+            });
+        }
+
         const visitor = await Visitor.findById(req.params.id);
 
         // ❗ important check
         if (!visitor) {
-            return res.status(404).json({ message: "Visitor not found" });
+            return res.status(404).json({
+                success: false,
+                message: "Visitor not found",
+                data: null,
+            });
         }
 
         visitor.exitTime = new Date();
@@ -30,9 +65,17 @@ export const markExit = async (req, res) => {
 
         await visitor.save();
 
-        res.status(200).json(visitor);
+        return res.status(200).json({
+            success: true,
+            message: "Visitor exit recorded",
+            data: visitor,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to mark visitor exit",
+            data: null,
+        });
     }
 };
 
@@ -43,8 +86,16 @@ export const getVisitors = async (req, res) => {
             .populate("visitingTo", "name email")
             .sort({ createdAt: -1 });
 
-        res.status(200).json(data);
+        return res.status(200).json({
+            success: true,
+            message: "Visitors fetched successfully",
+            data,
+        });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch visitors",
+            data: null,
+        });
     }
 };

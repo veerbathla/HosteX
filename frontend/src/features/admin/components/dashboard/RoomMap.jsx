@@ -1,15 +1,6 @@
 import RoomCard from "./RoomCard";
 
-export default function RoomMap() {
-  const rooms = [
-    { id: 1, number: "101", status: "occupied", occupants: 2, capacity: 3 },
-    { id: 2, number: "102", status: "empty", occupants: 0, capacity: 3 },
-    { id: 3, number: "103", status: "issue", occupants: 1, capacity: 2 },
-    { id: 4, number: "104", status: "occupied", occupants: 3, capacity: 3 },
-    { id: 5, number: "105", status: "empty", occupants: 0, capacity: 2 },
-    { id: 6, number: "106", status: "occupied", occupants: 1, capacity: 2 },
-  ];
-
+export default function RoomMap({ rooms = [] }) {
   return (
     <div className="bg-white p-5 rounded-2xl shadow-sm">
       
@@ -19,11 +10,17 @@ export default function RoomMap() {
       </h2>
 
       {/* Grid */}
-      <div className="grid grid-cols-6 gap-4">
-        {rooms.map((room) => (
-          <RoomCard key={room.id} room={room} />
-        ))}
-      </div>
+      {rooms.length ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+          {rooms.slice(0, 12).map((room) => (
+            <RoomCard key={room.id} room={room} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-xl border border-dashed border-gray-200 p-6 text-sm font-medium text-gray-500">
+          No room data returned by the API yet.
+        </div>
+      )}
 
     </div>
   );

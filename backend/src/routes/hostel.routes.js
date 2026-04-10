@@ -49,7 +49,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", createHostel);
+router.post("/", protect, authRole("super_admin"), createHostel);
 /**
  * @swagger
  * /api/hostels:

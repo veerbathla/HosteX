@@ -15,7 +15,7 @@ export const studentNav = [
     name: "Complaints",
     path: "/student/complaints",
     icon: "complaints",
-    badge: 2, // future: dynamic count
+    badge: 2,
   },
   {
     name: "Notifications",
@@ -61,5 +61,38 @@ export const adminNav = [
     path: "/admin/tasks",
     icon: "tasks",
     badge: 1,
+  },
+];
+
+export const gatekeeperNav = [
+  {
+    name: "Dashboard",
+    path: "/gatekeeper/dashboard",
+    icon: "dashboard",
+    badge: null,
+  },
+  {
+    name: "Entry/Exit",
+    path: "/gatekeeper/entry-exit",
+    icon: "entry",
+    badge: null,
+  },
+  {
+    name: "Visitors",
+    path: "/gatekeeper/visitors",
+    icon: "visitors",
+    badge: null,
+  },
+  {
+    name: "Parcels",
+    path: "/gatekeeper/parcels",
+    icon: "parcel",
+    badge: 2, // pending parcels (dynamic later)
+  },
+  {
+    name: "Logs",
+    path: "/gatekeeper/logs",
+    icon: "logs",
+    badge: null,
   },
 ];

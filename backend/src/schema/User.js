@@ -11,14 +11,17 @@ const userSchema = new mongoose.Schema(
             type: String,
             required: true,
             unique: true,
+            lowercase: true,
+            trim: true,
         },
         password: {
             type: String,
             required: true,
+            select: false,
         },
         role: {
             type: String,
-            enum: ["super_admin", "admin", "student"],
+            enum: ["super_admin", "admin", "student", "gatekeeper"],
             default: "student",
         },
         hostelId: {
@@ -32,11 +35,11 @@ const userSchema = new mongoose.Schema(
         phoneNo: {
             type: String,
             unique: true,
+            sparse: true,
         },
         enrollmentNo: {
             type: String,
-            unique: true,
-            default: () => Math.random().toString().slice(2, 10),
+            default: () => Math.random().toString().slice(2, 10)
         },
         courses: {
             type: String,
@@ -48,13 +51,16 @@ const userSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
-    }
+    },
+    { timestamps: true }
 )
 
 userSchema.pre("save", async function () {
     if (!this.isModified("password")) return;
 
-    const salt = await bcrypt.genSalt(10);
+    const configuredRounds = Number(process.env.BCRYPT_SALT_ROUNDS);
+    const saltRounds = Number.isInteger(configuredRounds) && configuredRounds >= 10 ? configuredRounds : 12;
+    const salt = await bcrypt.genSalt(saltRounds);
     this.password = await bcrypt.hash(this.password, salt);
 });
 
@@ -63,8 +69,6 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
     return isPasswordCorrect;
 };
 
-const User =
-    mongoose.models.User || mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 
-// export default User;
-export default mongoose.model("User", userSchema);
+export default User;

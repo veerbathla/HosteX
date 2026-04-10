@@ -66,7 +66,7 @@ router.get("/my", protect, getMyLeaves);
  *       500:
  *         description: Server error
  */
-router.get("/", protect, authRole("admin"), getAllLeaves);
+router.get("/", protect, authRole("admin", "super_admin"), getAllLeaves);
 
 /**
  * @swagger
@@ -97,6 +97,6 @@ router.get("/", protect, authRole("admin"), getAllLeaves);
  *       500:
  *         description: Server error
  */
-router.put("/:id", protect, authRole("admin"), updateLeaveStatus);
+router.put("/:id", protect, authRole("admin", "super_admin"), updateLeaveStatus);
 
 export default router;

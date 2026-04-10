@@ -46,7 +46,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/", createUser);
+router.post("/", protect, authRole("admin", "super_admin"), createUser);
 /**
  * @swagger
  * /api/users:
@@ -79,6 +79,6 @@ router.post("/", createUser);
  *       500:
  *         description: Server error
  */
-router.get("/", protect, authRole("admin"), getUsers);
+router.get("/", protect, authRole("admin", "super_admin"), getUsers);
 
 export default router;

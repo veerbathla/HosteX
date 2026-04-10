@@ -4,6 +4,8 @@ import {
     studentExit,
     getLogs,
 } from "../controller/entry.controller.js";
+import { protect } from "../middleware/auth.middleware.js";
+import { authRole } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
@@ -32,7 +34,7 @@ const router = express.Router();
  *       500:
  *         description: Server error
  */
-router.post("/entry", studentEntry);
+router.post("/entry", protect, authRole("admin", "super_admin", "gatekeeper"), studentEntry);
 /**
  * @swagger
  * /api/entry/exit:
@@ -62,7 +64,7 @@ router.post("/entry", studentEntry);
  *       500:
  *         description: Server error
  */
-router.post("/exit", studentExit);
+router.post("/exit", protect, authRole("admin", "super_admin", "gatekeeper"), studentExit);
 /**
  * @swagger
  * /api/entry:
@@ -102,6 +104,6 @@ router.post("/exit", studentExit);
  *       500:
  *         description: Server error
  */
-router.get("/", getLogs);
+router.get("/", protect, authRole("admin", "super_admin", "gatekeeper"), getLogs);
 
 export default router;

@@ -5,12 +5,28 @@ import Hostel from "../schema/hostelSchema.js";
 // create hostel (super admin)
 export const createHostel = async (req, res) => {
     try {
+        const { name, location, hostelId, totalRooms, totalFloors } = req.body;
+
+        if (!name?.trim() || !location?.trim() || !hostelId?.trim() || !totalRooms || !totalFloors) {
+            return res.status(400).json({
+                success: false,
+                message: "Name, location, hostel ID, total rooms, and total floors are required",
+                data: null,
+            });
+        }
+
         const hostel = await Hostel.create(req.body);
-        res.status(200).json({ msg: "Hostel Created.. ", ...hostel._doc })
+        return res.status(201).json({
+            success: true,
+            message: "Hostel created successfully",
+            data: hostel,
+        });
     } catch (error) {
-        res.status(500).json({
-            message: error.message,
-        })
+        return res.status(500).json({
+            success: false,
+            message: "Unable to create hostel",
+            data: null,
+        });
     }
 
 };
@@ -19,10 +35,16 @@ export const createHostel = async (req, res) => {
 export const getHostels = async (req, res) => {
     try {
         const hostels = await Hostel.find();
-        res.status(200).json({ hostels })
+        return res.status(200).json({
+            success: true,
+            message: "Hostels fetched successfully",
+            data: hostels,
+        });
     } catch (error) {
-        res.status(500).json({
-            message: error.message,
-        })
+        return res.status(500).json({
+            success: false,
+            message: "Unable to fetch hostels",
+            data: null,
+        });
     }
 };
