@@ -18,79 +18,20 @@ import Select from "../../../components/ui/Select";
 import { getAllStudents } from "../../../services/api/studentService";
 import { getErrorMessage } from "../../../services/api/normalizers";
 
-const initialApplications = [
-  {
-    id: 1,
-    name: "Arjun Sharma",
-    studentId: "STU-9821",
-    course: "B.Tech Computer Science",
-    year: "Year 3, Semester 5",
-    date: "Oct 24, 2023",
-    status: "pending",
-  },
-  {
-    id: 2,
-    name: "Lydia Wang",
-    studentId: "STU-4432",
-    course: "M.A. International Policy",
-    year: "Year 1, Semester 1",
-    date: "Oct 23, 2023",
-    status: "approved",
-  },
-  {
-    id: 3,
-    name: "Marcus Kane",
-    studentId: "STU-1102",
-    course: "B.Sc Architecture",
-    year: "Year 4, Semester 7",
-    date: "Oct 22, 2023",
-    status: "rejected",
-  },
-  {
-    id: 4,
-    name: "Elena Rodriguez",
-    studentId: "STU-5561",
-    course: "B.A. English Literature",
-    year: "Year 2, Semester 3",
-    date: "Oct 21, 2023",
-    status: "pending",
-  },
-  {
-    id: 5,
-    name: "Kabir Malhotra",
-    studentId: "STU-7009",
-    course: "B.Com Finance",
-    year: "Year 2, Semester 4",
-    date: "Oct 20, 2023",
-    status: "approved",
-  },
-  {
-    id: 6,
-    name: "Nora Patel",
-    studentId: "STU-2290",
-    course: "B.Des Product Design",
-    year: "Year 1, Semester 2",
-    date: "Oct 19, 2023",
-    status: "pending",
-  },
-];
-
 const statusMeta = {
-  pending: { label: "Pending", badge: "warning" },
-  approved: { label: "Approved", badge: "success" },
-  rejected: { label: "Rejected", badge: "error" },
+  pending: {
+    label: "Pending",
+    badge: "warning",
+  },
+  approved: {
+    label: "Approved",
+    badge: "success",
+  },
+  rejected: {
+    label: "Rejected",
+    badge: "danger",
+  },
 };
-
-const checkInNames = [
-  "Riya Mehra",
-  "Dev Arora",
-  "Sana Kapoor",
-  "Ishan Verma",
-  "Meera Joshi",
-  "Aditya Rao",
-  "Zara Khan",
-  "Neil D'Souza",
-];
 
 function StatCard({ label, value, helper, icon, tone }) {
   const toneMap = {
@@ -121,7 +62,7 @@ function StatCard({ label, value, helper, icon, tone }) {
 }
 
 export default function Students() {
-  const [applications, setApplications] = useState(initialApplications);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
@@ -158,9 +99,8 @@ export default function Students() {
         }
       } catch (error) {
         if (active) {
-          setApiNotice(
-            `${getErrorMessage(error)} Showing local student request data.`,
-          );
+          setApiNotice(getErrorMessage(error));
+          setApplications([]);
         }
       } finally {
         if (active) setLoading(false);
@@ -176,12 +116,10 @@ export default function Students() {
 
   const stats = useMemo(
     () => ({
-      total: 124 + applications.length - initialApplications.length,
-      pending: applications.filter((item) => item.status === "pending").length + 45,
-      approved:
-        applications.filter((item) => item.status === "approved").length + 60,
-      rejected:
-        applications.filter((item) => item.status === "rejected").length + 13,
+      total: applications.length,
+      pending: applications.filter((item) => item.status === "pending").length,
+      approved: applications.filter((item) => item.status === "approved").length,
+      rejected: applications.filter((item) => item.status === "rejected").length,
     }),
     [applications],
   );
@@ -416,7 +354,7 @@ export default function Students() {
               ))
             ) : (
               visibleApplications.map((application) => {
-                const meta = statusMeta[application.status];
+                const meta = statusMeta[application.status] || statusMeta.pending;
 
                 return (
                   <div

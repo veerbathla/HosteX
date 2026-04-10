@@ -9,63 +9,23 @@ import {
   UserCog,
   Wrench,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Badge from "../../../components/ui/Badge";
 import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
-
-const initialStaff = [
-  { id: 1, name: "James Wilson", role: "Plumbing", status: "active" },
-  { id: 2, name: "Sarah Chen", role: "Cleaning", status: "active" },
-  { id: 3, name: "Mark Rodriguez", role: "Electrical", status: "active" },
-  { id: 4, name: "Emily Blunt", role: "Housekeeping", status: "off-duty" },
-];
-
-const initialTasks = [
-  {
-    id: 1,
-    title: "Check Water Filtration Plant",
-    location: "Utility Block",
-    category: "maintenance",
-    assignee: "Mark Rodriguez",
-    due: "Yesterday",
-    priority: "low",
-    status: "completed",
-  },
-  {
-    id: 2,
-    title: "Deep clean common study lounge",
-    location: "Floor 3",
-    category: "cleaning",
-    assignee: "Sarah Chen",
-    due: "Today",
-    priority: "medium",
-    status: "in-progress",
-  },
-  {
-    id: 3,
-    title: "Repair bathroom exhaust fan",
-    location: "Room A-203",
-    category: "maintenance",
-    assignee: "James Wilson",
-    due: "Today",
-    priority: "high",
-    status: "pending",
-  },
-  {
-    id: 4,
-    title: "Inspect corridor fire extinguishers",
-    location: "Block B",
-    category: "inspection",
-    assignee: "Unassigned",
-    due: "Tomorrow",
-    priority: "medium",
-    status: "pending",
-  },
-];
-
+import {
+  getAllTasks,
+  createTask,
+  updateTaskStatus,
+} from "../../../services/api/taskService";
+import {
+  getAllStaff,
+  createStaff,
+  updateStaffStatus,
+} from "../../../services/api/staffService";
+import { getErrorMessage } from "../../../services/api/normalizers";
 const priorityBadge = {
   low: "success",
   medium: "warning",
@@ -79,8 +39,10 @@ const statusBadge = {
 };
 
 export default function StaffTasks() {
-  const [tasks, setTasks] = useState(initialTasks);
-  const [staff, setStaff] = useState(initialStaff);
+  const [tasks, setTasks] = useState([]);
+  const [staff, setStaff] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [message, setMessage] = useState("");
@@ -94,7 +56,44 @@ export default function StaffTasks() {
     priority: "medium",
     category: "maintenance",
   });
+  useEffect(() => {
+    let isMounted = true;
 
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        setApiNotice("");
+
+        const [tasksResponse, staffResponse] = await Promise.all([
+          getAllTasks(),
+          getAllStaff(),
+        ]);
+
+        if (!isMounted) return;
+
+        setTasks(Array.isArray(tasksResponse) ? tasksResponse : []);
+        setStaff(Array.isArray(staffResponse) ? staffResponse : []);
+      } catch (error) {
+        console.error("StaffTasks fetch error:", error);
+
+        if (!isMounted) return;
+
+        setApiNotice(getErrorMessage(error) || "Failed to load data");
+        setTasks([]);
+        setStaff([]);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
   const filteredTasks = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
@@ -126,15 +125,18 @@ export default function StaffTasks() {
     window.setTimeout(() => setMessage(""), 2200);
   };
 
-  const updateTaskStatus = (id, status) => {
-    setTasks((prev) =>
-      prev.map((task) => (task.id === id ? { ...task, status } : task)),
-    );
-    showMessage(
-      status === "completed"
-        ? "Task marked completed."
-        : "Task moved to in progress.",
-    );
+  const handleUpdateTaskStatus = async (id, status) => {
+    try {
+      const updated = await updateTaskStatus(id, status);
+
+      setTasks((prev) =>
+        prev.map((task) => (task.id === id ? updated : task))
+      );
+
+      showMessage("Task updated.");
+    } catch {
+      showMessage("Task update failed.");
+    }
   };
 
   const assignTask = (id) => {
@@ -164,61 +166,65 @@ export default function StaffTasks() {
       prev.map((member) =>
         member.id === id
           ? {
-              ...member,
-              status: member.status === "active" ? "off-duty" : "active",
-            }
+            ...member,
+            status: member.status === "active" ? "off-duty" : "active",
+          }
           : member,
       ),
     );
   };
 
-  const addStaffMember = () => {
+  const addStaffMember = async () => {
     if (!newStaff.name.trim() || !newStaff.role.trim()) {
       showMessage("Add staff name and role.");
       return;
     }
 
-    setStaff((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
+    try {
+      const created = await createStaff({
         name: newStaff.name.trim(),
         role: newStaff.role.trim(),
-        status: "active",
-      },
-    ]);
-    setNewStaff({ name: "", role: "" });
-    showMessage("Staff member added.");
+      });
+
+      setStaff((prev) => [...prev, created]);
+      setNewStaff({ name: "", role: "" });
+
+      showMessage("Staff member added.");
+    } catch (error) {
+      showMessage(error.message || "Staff could not be added.");
+    }
   };
 
-  const addTask = () => {
+  const addTask = async () => {
     if (!form.title.trim() || !form.location.trim()) {
       showMessage("Add a task title and location.");
       return;
     }
 
-    setTasks((prev) => [
-      {
-        id: Date.now(),
+    try {
+      const created = await createTask({
         title: form.title.trim(),
         location: form.location.trim(),
-        category: form.category,
         assignee: form.assignee,
-        due: "Today",
         priority: form.priority,
-        status: "pending",
-      },
-      ...prev,
-    ]);
-    setForm({
-      title: "",
-      location: "",
-      assignee: "Unassigned",
-      priority: "medium",
-      category: "maintenance",
-    });
-    setIsAdding(false);
-    showMessage("New staff task created.");
+        category: form.category,
+      });
+
+      setTasks((prev) => [created, ...prev]);
+
+      setForm({
+        title: "",
+        location: "",
+        assignee: "Unassigned",
+        priority: "medium",
+        category: "maintenance",
+      });
+
+      setIsAdding(false);
+      showMessage("New task created.");
+    } catch (error) {
+      showMessage(error.message || "Task could not be created.");
+    }
   };
 
   return (
@@ -247,6 +253,11 @@ export default function StaffTasks() {
         {message && (
           <div className="rounded-lg bg-green-100 px-4 py-3 text-sm font-medium text-green-800">
             {message}
+          </div>
+        )}
+        {apiNotice && (
+          <div className="rounded-lg bg-amber-100 px-4 py-3 text-sm font-medium text-amber-800">
+            {apiNotice}
           </div>
         )}
 
@@ -313,86 +324,128 @@ export default function StaffTasks() {
             </div>
 
             <div className="divide-y">
-              {filteredTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="grid gap-4 p-5 lg:grid-cols-[1fr_150px_120px_190px_24px] lg:items-center"
-                >
-                  <div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h3 className="font-semibold text-gray-800">
-                        {task.title}
-                      </h3>
-                      <Badge type={priorityBadge[task.priority]}>
-                        {task.priority}
-                      </Badge>
+              {loading ? (
+                [...Array(4)].map((_, index) => (
+                  <div
+                    key={index}
+                    className="grid gap-4 p-5 animate-pulse lg:grid-cols-[1fr_150px_120px_190px_24px] lg:items-center"
+                  >
+                    <div>
+                      <div className="h-5 w-48 rounded bg-gray-200"></div>
+                      <div className="mt-2 h-4 w-32 rounded bg-gray-100"></div>
                     </div>
-                    <p className="mt-1 text-sm text-gray-500">
-                      {task.location} - {task.category}
-                    </p>
-                  </div>
 
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {task.assignee}
-                    </p>
-                    <p className="text-xs text-gray-400">Assigned staff</p>
-                  </div>
+                    <div>
+                      <div className="h-4 w-24 rounded bg-gray-200"></div>
+                      <div className="mt-2 h-3 w-20 rounded bg-gray-100"></div>
+                    </div>
 
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {task.due}
-                    </p>
-                    <p className="text-xs text-gray-400">Due date</p>
-                  </div>
+                    <div>
+                      <div className="h-4 w-20 rounded bg-gray-200"></div>
+                      <div className="mt-2 h-3 w-16 rounded bg-gray-100"></div>
+                    </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    <Badge type={statusBadge[task.status]}>
-                      {task.status.replace("-", " ")}
-                    </Badge>
-                    {task.status === "pending" && (
-                      <Button size="sm" onClick={() => updateTaskStatus(task.id, "in-progress")}>
-                        Start
-                      </Button>
-                    )}
-                    {task.status !== "completed" && (
+                    <div className="flex gap-2">
+                      <div className="h-8 w-16 rounded bg-gray-200"></div>
+                      <div className="h-8 w-16 rounded bg-gray-100"></div>
+                    </div>
+
+                    <div className="h-8 w-8 rounded bg-gray-200"></div>
+                  </div>
+                ))
+              ) : filteredTasks.length > 0 ? (
+                filteredTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="grid gap-4 p-5 lg:grid-cols-[1fr_150px_120px_190px_24px] lg:items-center"
+                  >
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold text-gray-800">{task.title}</h3>
+                        <Badge type={priorityBadge[task.priority]}>
+                          {task.priority}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {task.location} - {task.category}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">
+                        {task.assignee}
+                      </p>
+                      <p className="text-xs text-gray-400">Assigned staff</p>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{task.due}</p>
+                      <p className="text-xs text-gray-400">Due date</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <Badge type={statusBadge[task.status]}>
+                        {task.status.replace("-", " ")}
+                      </Badge>
+
+                      {task.status === "pending" && (
+                        <Button
+                          size="sm"
+                          onClick={() =>
+                            handleUpdateTaskStatus(task.id, "in-progress")
+                          }
+                        >
+                          Start
+                        </Button>
+                      )}
+
+                      {task.status !== "completed" && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            handleUpdateTaskStatus(task.id, "completed")
+                          }
+                        >
+                          Done
+                        </Button>
+                      )}
+
+                      {task.assignee === "Unassigned" && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => assignTask(task.id)}
+                        >
+                          Assign
+                        </Button>
+                      )}
+
                       <Button
                         size="sm"
-                        variant="outline"
-                        onClick={() => updateTaskStatus(task.id, "completed")}
+                        variant="ghost"
+                        onClick={() => rescheduleTask(task.id)}
                       >
-                        Done
+                        <CalendarClock size={14} />
                       </Button>
-                    )}
-                    {task.assignee === "Unassigned" && (
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => assignTask(task.id)}
-                      >
-                        Assign
-                      </Button>
-                    )}
+                    </div>
+
                     <Button
-                      size="sm"
                       variant="ghost"
-                      onClick={() => rescheduleTask(task.id)}
+                      size="sm"
+                      onClick={() => showMessage(`Opened ${task.title}`)}
+                      className="text-gray-400 hover:text-gray-700"
+                      aria-label={`Open ${task.title} actions`}
                     >
-                      <CalendarClock size={14} />
+                      <MoreVertical size={18} />
                     </Button>
                   </div>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => showMessage(`Opened ${task.title}`)}
-                    className="text-gray-400 hover:text-gray-700"
-                    aria-label={`Open ${task.title} actions`}
-                  >
-                    <MoreVertical size={18} />
-                  </Button>
+                ))
+              ) : (
+                <div className="p-8 text-center text-sm text-gray-500">
+                  No tasks found from API.
                 </div>
-              ))}
+              )}
             </div>
 
             {filteredTasks.length === 0 && (

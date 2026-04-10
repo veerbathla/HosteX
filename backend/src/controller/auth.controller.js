@@ -97,13 +97,7 @@ export const register = async (req, res) => {
             });
         }
 
-        if (role !== "student") {
-            return res.status(403).json({
-                success: false,
-                message: "Only student accounts can self-register",
-                data: null,
-            });
-        }
+        // Allow all requested roles to register instead of just students
 
         const existingUser = await User.findOne({ email: email.toLowerCase() });
         if (existingUser) {
@@ -136,7 +130,7 @@ export const register = async (req, res) => {
 //login
 export const login = async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
 
         if (!email?.trim() || !password) {
             return res.status(400).json({
@@ -159,6 +153,14 @@ export const login = async (req, res) => {
             return res.status(401).json({
                 success: false,
                 message: "Invalid email or password",
+                data: null,
+            });
+        }
+
+        if (role && user.role !== role) {
+            return res.status(403).json({
+                success: false,
+                message: `Access denied. You are not registered as ${role === 'admin' ? 'an admin' : 'a ' + role}.`,
                 data: null,
             });
         }

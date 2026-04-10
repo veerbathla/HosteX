@@ -13,7 +13,6 @@ import Button from "../../../components/ui/Button";
 import Card from "../../../components/ui/Card";
 import Input from "../../../components/ui/Input";
 import Select from "../../../components/ui/Select";
-import { complaints as initialComplaints } from "../../../data/dummyData";
 import {
   createComplaint,
   getAllComplaints,
@@ -23,10 +22,7 @@ import { getErrorMessage } from "../../../services/api/normalizers";
 import ComplaintsTable from "../components/complaints/ComplaintsTable";
 import SmartCard from "../components/complaints/SmartCard";
 
-const seedComplaints = initialComplaints.map((complaint, index) => ({
-  room: ["Room 302", "Floor 4", "Laundry Block"][index] || "Admin Desk",
-  ...complaint,
-}));
+
 
 function MetricCard({ icon, label, value, trend, tone }) {
   const toneMap = {
@@ -58,7 +54,7 @@ function MetricCard({ icon, label, value, trend, tone }) {
 }
 
 export default function Complaints() {
-  const [complaints, setComplaints] = useState(seedComplaints);
+  const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [apiNotice, setApiNotice] = useState("");
   const [query, setQuery] = useState("");
@@ -73,29 +69,33 @@ export default function Complaints() {
     priority: "medium",
     status: "new",
   });
-
   useEffect(() => {
     let active = true;
 
-    async function loadComplaints() {
+    const loadComplaints = async () => {
       setLoading(true);
       setApiNotice("");
 
       try {
         const data = await getAllComplaints();
-        if (active && data.length) {
-          setComplaints(data);
-        }
+
+        if (!active) return;
+
+        // API data aaya to directly set kar
+        setComplaints(data);
       } catch (error) {
+        console.error("Complaint fetch error:", error);
+
         if (active) {
-          setApiNotice(
-            `${getErrorMessage(error)} Showing local complaint data.`,
-          );
+          setApiNotice(getErrorMessage(error));
+          setComplaints([]); // fallback static hata diya
         }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
-    }
+    };
 
     loadComplaints();
 
@@ -118,13 +118,19 @@ export default function Complaints() {
     const term = query.trim().toLowerCase();
 
     return complaints.filter((complaint) => {
+      const title = complaint?.title?.toLowerCase?.() || "";
+      const student = complaint?.student?.toLowerCase?.() || "";
+      const room = complaint?.room?.toLowerCase?.() || "";
+      const status = complaint?.status || "";
+
       const matchesSearch =
         !term ||
-        complaint.title.toLowerCase().includes(term) ||
-        complaint.student.toLowerCase().includes(term) ||
-        complaint.room.toLowerCase().includes(term);
+        title.includes(term) ||
+        student.includes(term) ||
+        room.includes(term);
+
       const matchesStatus =
-        statusFilter === "all" || complaint.status === statusFilter;
+        statusFilter === "all" || status === statusFilter;
 
       return matchesSearch && matchesStatus;
     });
@@ -247,13 +253,13 @@ export default function Complaints() {
         prev.map((complaint) =>
           complaint.id === modal.complaint.id
             ? {
-                ...complaint,
-                title: form.title.trim(),
-                student: form.student.trim(),
-                room: form.room.trim(),
-                priority: form.priority,
-                status: form.status,
-              }
+              ...complaint,
+              title: form.title.trim(),
+              student: form.student.trim(),
+              room: form.room.trim(),
+              priority: form.priority,
+              status: form.status,
+            }
             : complaint,
         ),
       );

@@ -24,7 +24,10 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
+  const [loginRole, setLoginRole] = useState("student");
+
   const { showToast } = useToast();
+
   const mode = location.pathname === "/signup" ? "signup" : "login";
   const from = location.state?.from?.pathname;
 
@@ -54,32 +57,59 @@ export default function Auth() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validate()) {
-      return;
-    }
+    console.log("🔥 SUBMIT FIRED");
+
+    if (!validate()) return;
 
     setLoading(true);
     setError("");
 
     try {
+      const payload = {
+        email: email.trim(),
+        password,
+        role: loginRole,
+      };
+
       const session =
         mode === "login"
-          ? await login({ email: email.trim(), password })
-          : await register({ name: name.trim(), email: email.trim(), password, role: "student" });
+          ? await login(payload)
+          : await register({
+            name: name.trim(),
+            ...payload,
+          });
 
-      const resolvedRole = session?.data?.user?.role || session?.user?.role || session?.role || "student";
+      // safer role extraction (prevents undefined crash)
+      const resolvedRole =
+        session?.data?.user?.role ||
+        session?.user?.role ||
+        session?.role ||
+        loginRole ||
+        "student";
+
       showToast({
         title: mode === "login" ? "Welcome back" : "Account created",
         message: "You are signed in securely.",
         type: "success",
       });
-      navigate(from || dashboardByRole[resolvedRole] || "/student/dashboard", {
-        replace: true,
-      });
+
+      navigate(
+        from || dashboardByRole[resolvedRole] || "/student/dashboard",
+        { replace: true }
+      );
     } catch (apiError) {
-      const message = apiError.message || "Authentication failed. Please try again.";
+      const message =
+        apiError?.response?.data?.message ||
+        apiError?.message ||
+        "Authentication failed. Please try again.";
+
       setError(message);
-      showToast({ title: "Authentication failed", message, type: "error" });
+
+      showToast({
+        title: "Authentication failed",
+        message,
+        type: "error",
+      });
     } finally {
       setLoading(false);
     }
@@ -105,16 +135,35 @@ export default function Auth() {
         </div>
 
         {/* Right Panel */}
-        <form onSubmit={handleSubmit} className="flex flex-col justify-center p-8 md:w-1/2 md:p-10">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col justify-center p-8 md:w-1/2 md:p-10"
+        >
           <h2 className="text-2xl font-bold">
             {mode === "login" ? "Login" : "Sign Up"}
           </h2>
 
-          {mode === "signup" && (
-            <p className="mt-3 rounded-lg bg-green-50 px-3 py-2 text-xs font-medium text-green-700">
-              Public signup creates student accounts. Staff accounts must be created by an administrator.
-            </p>
-          )}
+          {/* Role Selection */}
+          <div className="mt-4 flex space-x-6">
+            {["student", "admin", "gatekeeper"].map((role) => (
+              <label
+                key={role}
+                className="flex cursor-pointer items-center space-x-2"
+              >
+                <input
+                  type="radio"
+                  name="loginRole"
+                  value={role}
+                  checked={loginRole === role}
+                  onChange={() => setLoginRole(role)}
+                  className="form-radio text-green-600 focus:ring-green-500"
+                />
+                <span className="text-sm font-medium capitalize">
+                  {role === "gatekeeper" ? "Guard" : role}
+                </span>
+              </label>
+            ))}
+          </div>
 
           {/* Inputs */}
           <div className="mt-6 space-y-4">
@@ -124,13 +173,12 @@ export default function Auth() {
                 value={name}
                 onChange={(e) => {
                   setName(e.target.value);
-                  setFieldErrors((current) => ({ ...current, name: "" }));
+                  setFieldErrors((c) => ({ ...c, name: "" }));
                 }}
-                className="px-3 py-2"
               />
             )}
             {fieldErrors.name && (
-              <p className="text-xs font-medium text-red-600">{fieldErrors.name}</p>
+              <p className="text-xs text-red-600">{fieldErrors.name}</p>
             )}
 
             <Input
@@ -139,12 +187,11 @@ export default function Auth() {
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value);
-                setFieldErrors((current) => ({ ...current, email: "" }));
+                setFieldErrors((c) => ({ ...c, email: "" }));
               }}
-              className="px-3 py-2"
             />
             {fieldErrors.email && (
-              <p className="text-xs font-medium text-red-600">{fieldErrors.email}</p>
+              <p className="text-xs text-red-600">{fieldErrors.email}</p>
             )}
 
             <Input
@@ -153,18 +200,15 @@ export default function Auth() {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
-                setFieldErrors((current) => ({ ...current, password: "" }));
+                setFieldErrors((c) => ({ ...c, password: "" }));
               }}
-              className="px-3 py-2"
             />
             {fieldErrors.password && (
-              <p className="text-xs font-medium text-red-600">
-                {fieldErrors.password}
-              </p>
+              <p className="text-xs text-red-600">{fieldErrors.password}</p>
             )}
 
             {error && (
-              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700">
+              <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
                 {error}
               </p>
             )}
