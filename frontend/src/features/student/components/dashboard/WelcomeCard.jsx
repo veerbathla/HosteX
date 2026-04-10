@@ -17,7 +17,7 @@ export default function WelcomeCard() {
         </Button>
         <Button
           variant="outline"
-          className="border-white text-white hover:bg-white hover:text-green-700"
+          className="border-white text-green-700 hover:bg-white hover:text-green-700"
         >
           Digital Key
         </Button>
