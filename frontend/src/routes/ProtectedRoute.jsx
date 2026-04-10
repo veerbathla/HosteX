@@ -6,6 +6,7 @@ const dashboardByRole = {
   admin: "/admin/dashboard",
   student: "/student/dashboard",
   gatekeeper: "/gatekeeper/dashboard",
+  super_admin: "/superadmin/dashboard",
 };
 
 export default function ProtectedRoute({ role }) {
@@ -48,7 +49,8 @@ export default function ProtectedRoute({ role }) {
   }
 
   if (!user?.isLoggedIn || !user?.token) {
-    return <Navigate to="/login" replace state={{ from: location }} />;
+    const loginPath = role === "super_admin" ? "/superadmin/login" : "/login";
+    return <Navigate to={loginPath} replace state={{ from: location }} />;
   }
 
   if (role && user.role !== role) {

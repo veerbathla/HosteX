@@ -1,6 +1,6 @@
 import { LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { studentNav, adminNav, gatekeeperNav } from "../../constants/navigation";
+import { studentNav, adminNav, gatekeeperNav, superAdminNav } from "../../constants/navigation";
 import { logout } from "../../services/api/authService";
 import Button from "../ui/Button";
 
@@ -10,12 +10,14 @@ export default function Sidebar({ role }) {
     admin: adminNav,
     student: studentNav,
     gatekeeper: gatekeeperNav,
+    super_admin: superAdminNav,
   };
 
   const roleLabelByRole = {
     admin: "ADMIN PANEL",
     student: "STUDENT PORTAL",
     gatekeeper: "GATEKEEPER PORTAL",
+    super_admin: "SYSTEM CONTROL",
   };
 
   const links = linksByRole[role] || studentNav;

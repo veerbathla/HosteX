@@ -18,6 +18,8 @@ export default function Auth() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
