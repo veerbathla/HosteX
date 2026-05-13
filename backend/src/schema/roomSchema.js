@@ -4,12 +4,12 @@ const roomSchema = new mongoose.Schema(
     {
         roomNo: {
             type: String,
-            required: true,
-            unique: true,
+            required: true
         },
         hostelId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Hostel",
+            default: Math.random().toString(36).substring(2, 10)
         },
         floor: {
             type: Number,
@@ -64,7 +64,7 @@ const roomSchema = new mongoose.Schema(
             trim: true,
         },
     }
-,
+    ,
     { timestamps: true }
 )
 

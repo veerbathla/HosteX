@@ -36,20 +36,21 @@ export const createRequest = async (req, res) => {
 };
 
 // admin views
+
+
 export const getRequests = async (req, res) => {
     try {
-        const filter = req.user.hostelId ? { hostelId: req.user.hostelId } : {};
-        const requests = await Maintenance.find(filter).sort({ createdAt: -1 });
-        return res.status(200).json({
+        const requests = await Maintenance.find(); // ya jo tera model hai
+
+        res.status(200).json({
             success: true,
-            message: "Maintenance requests fetched successfully",
             data: requests,
         });
+
     } catch (error) {
-        return res.status(500).json({
-            success: false,
-            message: "Unable to fetch maintenance requests",
-            data: null,
+        console.log(error);
+        res.status(500).json({
+            message: error.message,
         });
     }
 };

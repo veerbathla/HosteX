@@ -13,8 +13,6 @@ const hostelSchema = new mongoose.Schema(
         },
         hostelId: {
             type: String,
-            required: true,
-            unique: true,
         },
         totalRooms: {
             type: Number,

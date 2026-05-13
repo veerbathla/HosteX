@@ -34,7 +34,8 @@ const allowedOrigins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5175",
-    "http://127.0.0.1:5175"
+    "http://127.0.0.1:5175",
+    "https://hostexfrontend.onrender.com"
 ];
 
 app.use(cors({
@@ -101,6 +102,7 @@ app.use("/api/parcels", parcelRoutes);
 app.use("/api/entry", entryRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/gatekeeper", gatekeeperRoutes);
+// router.get("/getRequest", protect, getRequest);
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({

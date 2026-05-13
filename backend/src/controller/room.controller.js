@@ -25,10 +25,13 @@ export const createRoom = async (req, res) => {
             data: room,
         });
     } catch (error) {
+        console.log("❌ FULL ERROR:", error); // 🔥
+        console.log("❌ MESSAGE:", error.message);
+        console.log("❌ STACK:", error.stack);
+
         return res.status(500).json({
             success: false,
-            message: "Unable to create room",
-            data: null,
+            message: error.message, // 🔥 real error send karo
         });
     }
 };
