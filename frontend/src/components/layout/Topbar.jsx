@@ -1,9 +1,10 @@
 import { Bell, Search } from "lucide-react";
-import Input from "../ui/Input";
-import { getCurrentUser } from "../../services/api/authService";
+import Input from "@/components/ui/Input";
+import { getCurrentUser } from "@/modules/auth/services/authService";
 import { useNavigate } from "react-router-dom";
 export default function Topbar({ role = "student" }) {
-  const user = getCurrentUser();
+  const raw = getCurrentUser();
+  const user = raw?.user || raw?.data?.user || raw;
   const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
   const displayName = user?.name || user?.email || roleLabel;
   const navigate = useNavigate();

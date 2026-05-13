@@ -1,8 +1,8 @@
 import { LogOut } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { studentNav, adminNav, gatekeeperNav } from "../../constants/navigation";
-import { logout } from "../../services/api/authService";
-import Button from "../ui/Button";
+import { studentNav, adminNav, gatekeeperNav, superAdminNav } from "@/constants/navigation";
+import { logout } from "@/modules/auth/services/authService";
+import Button from "@/components/ui/Button";
 
 export default function Sidebar({ role }) {
   const navigate = useNavigate();
@@ -10,12 +10,14 @@ export default function Sidebar({ role }) {
     admin: adminNav,
     student: studentNav,
     gatekeeper: gatekeeperNav,
+    super_admin: superAdminNav
   };
 
   const roleLabelByRole = {
     admin: "ADMIN PANEL",
     student: "STUDENT PORTAL",
     gatekeeper: "GATEKEEPER PORTAL",
+    super_admin: "SUPER ADMIN PANEL"
   };
 
   const links = linksByRole[role] || studentNav;
@@ -43,10 +45,9 @@ export default function Sidebar({ role }) {
             key={link.path}
             to={link.path}
             className={({ isActive }) =>
-              `flex items-center justify-between rounded-xl px-4 py-3.5 transition-all duration-300 ${
-                isActive
-                  ? "bg-green-50 font-bold text-green-800 shadow-sm ring-1 ring-green-100"
-                  : "font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              `flex items-center justify-between rounded-xl px-4 py-3.5 transition-all duration-300 ${isActive
+                ? "bg-green-50 font-bold text-green-800 shadow-sm ring-1 ring-green-100"
+                : "font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
               }`
             }
           >
