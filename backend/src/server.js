@@ -23,47 +23,53 @@ import gatekeeperRoutes from "./routes/gatekeeper.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
 import { sanitizeRequest } from "./middleware/sanitize.middleware.js";
 
-// Database
+// DB
 import { connectDB } from "./dataBase/db.js";
 
 dotenv.config();
-connectDB();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
+/* ---------------- DB CONNECTION ---------------- */
+connectDB();
+
+/* ---------------- CORS CONFIG ---------------- */
 const allowedOrigins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5175",
     "http://127.0.0.1:5175",
-    "https://hoste-x.vercel.app/"
+    "https://hoste-x.vercel.app"
 ];
 
-app.use(cors({
-    origin: function (origin, callback) {
-        // allow requests like Postman with no origin
-        if (!origin) return callback(null, true);
+app.use(
+    cors({
+        origin: function (origin, callback) {
+            // allow server-to-server / postman
+            if (!origin) return callback(null, true);
 
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true, // important: allows cookies/auth headers
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // allow preflight methods
-    allowedHeaders: ["Content-Type", "Authorization"], // allow these headers from frontend
-}));
-const PORT = process.env.PORT || 3000;
+            if (allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
 
+            console.log("❌ Blocked CORS Origin:", origin);
 
+            // IMPORTANT: don't throw error (prevents broken headers)
+            return callback(null, false);
+        },
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+    })
+);
 
-
-
-// Body parser and cookie parser
+/* ---------------- MIDDLEWARE ORDER (IMPORTANT) ---------------- */
 app.use(express.json());
 app.use(cookieParser());
 app.use(sanitizeRequest);
 
-// Swagger setup
+/* ---------------- SWAGGER ---------------- */
 const swaggerOptions = {
     definition: {
         openapi: "3.0.0",
@@ -87,7 +93,7 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// ✅ Routes
+/* ---------------- ROUTES ---------------- */
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/hostel", hostelRoutes);
@@ -102,21 +108,29 @@ app.use("/api/parcels", parcelRoutes);
 app.use("/api/entry", entryRoutes);
 app.use("/api/leaves", leaveRoutes);
 app.use("/api/gatekeeper", gatekeeperRoutes);
-// 404 handler
+
+/* ---------------- HEALTH CHECK ---------------- */
+app.get("/", (req, res) => {
+    res.json({
+        success: true,
+        message: "HosteX API is running 🚀",
+    });
+});
+
+/* ---------------- 404 HANDLER ---------------- */
 app.use((req, res) => {
     res.status(404).json({
         success: false,
         message: "Route not found",
-        data: null,
     });
 });
 
-// Error handler
+/* ---------------- ERROR HANDLER ---------------- */
 app.use(errorHandler);
 
-// Start server
+/* ---------------- START SERVER ---------------- */
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
 
 export default app;
