@@ -40,7 +40,8 @@ const allowedOrigins = [
     "http://127.0.0.1:5173",
     "http://localhost:5175",
     "http://127.0.0.1:5175",
-    "https://hostexbackend.onrender.com"
+    "https://hoste-x.vercel.app"
+    
 ];
 
 app.use(
