@@ -96,3 +96,17 @@ export const gatekeeperNav = [
     badge: null,
   },
 ];
+export const superAdminNav = [
+  {
+    name: "Dashboard",
+    path: "/superadmin/dashboard",
+    icon: "dashboard",
+    badge: null,
+  },
+  {
+    name: "Approvals",
+    path: "/superadmin/approvals",
+    icon: "approvals",
+    badge: 3,
+  },
+];

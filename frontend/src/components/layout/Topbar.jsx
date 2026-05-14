@@ -1,6 +1,6 @@
 import { Bell, Search } from "lucide-react";
-import Input from "../ui/Input";
-import { getCurrentUser } from "../../services/api/authService";
+import Input from "@/components/ui/Input";
+import { getCurrentUser } from "@/modules/auth/services/authService";
 import { useNavigate } from "react-router-dom";
 export default function Topbar({ role = "student" }) {
   const raw = getCurrentUser();

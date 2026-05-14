@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { SESSION_EXPIRED_EVENT } from "../../services/api/apiClient";
+import { SESSION_EXPIRED_EVENT } from "@/services/apiClient";
 import { ToastContext } from "./toastContext";
 
 export function ToastProvider({ children }) {
